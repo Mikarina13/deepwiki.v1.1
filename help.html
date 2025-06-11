@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Help - DeepWiki.io</title>
+    <link rel="stylesheet" href="/style.css">
+    <script type="module" src="/src/help.js"></script>
+    <style>
+      .help-container {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        max-width: 800px;
+        width: 95%;
+        max-height: 90vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        z-index: 1100;
+        box-shadow: 
+          0 0 15px rgba(6, 114, 115, 0.35),
+          0 0 30px rgba(6, 114, 115, 0.25),
+          0 0 45px rgba(6, 114, 115, 0.15),
+          0 0 60px rgba(6, 114, 115, 0.1);
+        animation: formGlow 2s ease-in-out infinite alternate;
+      }
+      
+      .help-header-title {
+        background-color: #07717c;
+        color: white;
+        padding: 15px 0;
+        text-align: center;
+        width: calc(100% + 60px);
+        margin: -30px -30px 25px -30px;
+        border-radius: 12px 12px 0 0;
+        position: relative;
+        left: 0;
+        right: 0;
+      }
+      
+      .help-header-title h1 {
+        color: white;
+        margin: 0;
+        font-size: 28px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="menu-header">
+      <img src="https://i.imgur.com/zcLQ3gB.png" alt="Menu Logo" class="menu-logo">
+      <div class="nav-links">
+        <div class="nav-container">
+          <a href="/publish.html" class="nav-item publish-nav">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 5v14"/>
+              <path d="M5 12h14"/>
+            </svg>
+            Publish
+          </a>
+          <a href="/index.html" class="nav-item archives-nav">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4v16a2 2 0 002 2h12a2 2 0 002-2V8.342a2 2 0 00-.602-1.43l-4.44-4.342A2 2 0 0013.56 2H6a2 2 0 00-2 2z"/>
+              <path d="M14 2v4a2 2 0 002 2h4"/>
+            </svg>
+            ARCHIVES
+          </a>
+          <a href="/collab.html" class="nav-item collab-nav">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+              <path d="M16 3.13a4 4 0 010 7.75"/>
+            </svg>
+            COLLAB
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="menu-overlay"></div>
+    <div class="menu-options info-menu"></div>
+
+    <div class="help-container">
+      <div class="help-header-title">
+        <h1>Help Center</h1>
+      </div>
+
+      <div class="help-search">
+        <input 
+          type="text" 
+          placeholder="Search help articles..." 
+          id="help-search"
+          aria-label="Search help articles"
+        >
+      </div>
+
+      <div class="help-sections">
+        <div class="help-section">
+          <h2>Getting Started</h2>
+          <ul>
+            <li>
+              <a href="#account">
+                <span>Creating an Account</span>
+                <small>Learn how to join DeepWiki.io</small>
+              </a>
+            </li>
+            <li>
+              <a href="#profile">
+                <span>Setting Up Your Profile</span>
+                <small>Customize your presence</small>
+              </a>
+            </li>
+            <li>
+              <a href="#navigation">
+                <span>Navigating DeepWiki.io</span>
+                <small>Find your way around</small>
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <div class="help-section">
+          <h2>Using the Archive</h2>
+          <ul>
+            <li>
+              <a href="#publishing">
+                <span>Publishing Content</span>
+                <small>Share your AI insights</small>
+              </a>
+            </li>
+            <li>
+              <a href="#searching">
+                <span>Searching the Archive</span>
+                <small>Find what you need</small>
+              </a>
+            </li>
+            <li>
+              <a href="#tags">
+                <span>Using Tags</span>
+                <small>Organize and discover content</small>
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <div class="help-section">
+          <h2>Collaboration</h2>
+          <ul>
+            <li>
+              <a href="#collab-post">
+                <span>Creating a Collab Post</span>
+                <small>Start collaborating</small>
+              </a>
+            </li>
+            <li>
+              <a href="#connecting">
+                <span>Connecting with Others</span>
+                <small>Find collaboration partners</small>
+              </a>
+            </li>
+            <li>
+              <a href="#best-practices">
+                <span>Collaboration Best Practices</span>
+                <small>Tips for success</small>
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <div class="help-section">
+          <h2>Need More Help?</h2>
+          <p>Can't find what you're looking for? Our support team is here to help!</p>
+          <a href="mailto:ava.dsa25@proton.me" class="contact-support-btn">Contact Support</a>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

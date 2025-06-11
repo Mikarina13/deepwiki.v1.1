@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Support DeepWiki.io</title>
+    <link rel="stylesheet" href="/style.css">
+    <script type="module">
+      import { initMenu } from './src/utils/menu.js';
+      
+      document.addEventListener('DOMContentLoaded', () => {
+        initMenu();
+      });
+    </script>
+    <style>
+      .support-container {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        max-width: 800px;
+        width: 95%;
+        max-height: 90vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        z-index: 1100;
+        box-shadow: 
+          0 0 15px rgba(6, 114, 115, 0.35),
+          0 0 30px rgba(6, 114, 115, 0.25),
+          0 0 45px rgba(6, 114, 115, 0.15),
+          0 0 60px rgba(6, 114, 115, 0.1);
+        animation: formGlow 2s ease-in-out infinite alternate;
+      }
+      
+      .support-header-title {
+        background-color: #07717c;
+        color: white;
+        padding: 15px 0;
+        text-align: center;
+        width: calc(100% + 60px);
+        margin: -30px -30px 25px -30px;
+        border-radius: 12px 12px 0 0;
+        position: relative;
+        left: 0;
+        right: 0;
+      }
+      
+      .support-header-title h1 {
+        color: white;
+        margin: 0;
+        font-size: 28px;
+      }
+      
+      .support-content h1 {
+        color: #07717c;
+        margin-bottom: 30px;
+        font-size: 2.2em;
+        text-align: center;
+        font-weight: 700;
+      }
+      
+      .support-content h2 {
+        color: #07717c;
+        margin: 30px 0 20px;
+        font-size: 1.6em;
+        font-weight: 600;
+      }
+      
+      .support-content p {
+        color: #333;
+        line-height: 1.7;
+        margin-bottom: 20px;
+        font-size: 16px;
+      }
+      
+      .donation-info {
+        background: rgba(250, 198, 55, 0.3);
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+        border: 1px solid rgba(7, 113, 124, 0.1);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="menu-header">
+      <img src="https://i.imgur.com/zcLQ3gB.png" alt="Menu Logo" class="menu-logo">
+      <div class="nav-links">
+        <div class="nav-container">
+          <a href="/publish.html" class="nav-item publish-nav">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 5v14"/>
+              <path d="M5 12h14"/>
+            </svg>
+            Publish
+          </a>
+          <a href="/index.html" class="nav-item archives-nav">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4v16a2 2 0 002 2h12a2 2 0 002-2V8.342a2 2 0 00-.602-1.43l-4.44-4.342A2 2 0 0013.56 2H6a2 2 0 00-2 2z"/>
+              <path d="M14 2v4a2 2 0 002 2h4"/>
+            </svg>
+            ARCHIVES
+          </a>
+          <a href="/collab.html" class="nav-item collab-nav">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+              <path d="M16 3.13a4 4 0 010 7.75"/>
+            </svg>
+            COLLAB
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="menu-overlay"></div>
+    <div class="menu-options info-menu"></div>
+    <div class="left-edge-trigger"></div>
+    <div class="menu-hamburger-indicator">
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+    </div>
+
+    <div class="support-container">
+      <div class="support-header-title">
+        <h1>Support DeepWiki.io</h1>
+      </div>
+      
+      <div class="support-content">
+        <h1>Help Keep DeepWiki.io Open, Free, and Growing!</h1>
+
+        <p>DeepWiki.io is built on the belief that valuable AI-generated knowledge should be accessible to everyone, everywhere – just like Wikipedia. Our mission is to "Share the Insight, Spare the Energy" by creating a vast, community-driven "Open AI Archive" that anyone can use for free.</p>
+
+        <p>We are committed to keeping DeepWiki.io an open platform, free from paywalls for accessing insights and free from intrusive advertising. To do this, and to cover our operational costs (like hosting and continued development), we rely on the generosity of our users and community – people like you!</p>
+
+        <h2>Your contribution, no matter how small, makes a real difference. It helps us:</h2>
+
+        <ul style="list-style: none; padding-left: 20px; margin: 20px 0;">
+          <li style="margin-bottom: 10px;">• Keep the servers running and the platform accessible 24/7</li>
+          <li style="margin-bottom: 10px;">• Continuously improve DeepWiki.io with new features and better user experience</li>
+          <li style="margin-bottom: 10px;">• Expand our archive of valuable AI insights for everyone to benefit from</li>
+          <li style="margin-bottom: 10px;">• Stay true to our mission of democratizing knowledge and promoting energy-efficient AI use</li>
+        </ul>
+
+        <p>If you find DeepWiki.io valuable and believe in our vision, please consider making a donation. Every little bit helps us sustain and grow this open resource for the world.</p>
+
+        <h2>How to Contribute:</h2>
+
+        <div class="donation-info">
+          <p style="margin-bottom: 10px;">You can send your donation directly to our PayPal account:</p>
+          <p style="font-weight: 500; color: #07717c;">ava.dsa25@proton.me</p>
+        </div>
+
+        <p>Thank you for being a part of the DeepWiki.io community and for helping us build the future of shared AI intelligence!</p>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Activity - DeepWiki.io</title>
+    <link rel="stylesheet" href="/style.css">
+    <script type="module" src="/src/activity.js"></script>
+    <style>
+      .activity-container {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        max-width: 800px;
+        width: 95%;
+        max-height: 90vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        z-index: 1100;
+        box-shadow: 
+          0 0 15px rgba(6, 114, 115, 0.35),
+          0 0 30px rgba(6, 114, 115, 0.25),
+          0 0 45px rgba(6, 114, 115, 0.15),
+          0 0 60px rgba(6, 114, 115, 0.1);
+        animation: formGlow 2s ease-in-out infinite alternate;
+      }
+      
+      .activity-header-title {
+        background-color: #07717c;
+        color: white;
+        padding: 15px 0;
+        text-align: center;
+        width: calc(100% + 60px);
+        margin: -30px -30px 25px -30px;
+        border-radius: 12px 12px 0 0;
+        position: relative;
+        left: 0;
+        right: 0;
+      }
+      
+      .activity-header-title h1 {
+        color: white;
+        margin: 0;
+        font-size: 28px;
+      }
+      
+      .activity-filters {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 30px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      
+      .empty-state {
+        color: #7a7a7a;
+        font-style: italic;
+        text-align: center;
+        padding: 20px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="menu-header">
+      <img src="https://i.imgur.com/zcLQ3gB.png" alt="Menu Logo" class="menu-logo">
+      <div class="nav-links">
+        <div class="nav-container">
+          <a href="/publish.html" class="nav-item publish-nav">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 5v14"/>
+              <path d="M5 12h14"/>
+            </svg>
+            Publish
+          </a>
+          <a href="/index.html" class="nav-item archives-nav">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4v16a2 2 0 002 2h12a2 2 0 002-2V8.342a2 2 0 00-.602-1.43l-4.44-4.342A2 2 0 0013.56 2H6a2 2 0 00-2 2z"/>
+              <path d="M14 2v4a2 2 0 002 2h4"/>
+            </svg>
+            ARCHIVES
+          </a>
+          <a href="/collab.html" class="nav-item collab-nav">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+              <path d="M16 3.13a4 4 0 010 7.75"/>
+            </svg>
+            COLLAB
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="menu-overlay"></div>
+    <div class="menu-options info-menu"></div>
+    <div class="left-edge-trigger"></div>
+    <div class="menu-hamburger-indicator">
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+    </div>
+
+    <div class="activity-container">
+      <div class="activity-header-title">
+        <h1>Activity</h1>
+      </div>
+      
+      <div class="activity-filters">
+        <button class="filter-button active" data-filter="all">All Activity</button>
+        <button class="filter-button" data-filter="archive">Archive Posts</button>
+        <button class="filter-button" data-filter="collab">Collab Posts</button>
+      </div>
+
+      <div class="activity-timeline">
+        <div class="timeline-header">
+          <h3>Recent Activity</h3>
+        </div>
+        <div id="activity-feed" class="timeline-feed">
+          <p class="empty-state">No recent activity</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer visible">
+      <div class="footer-links">
+        <a href="/info-hub.html">Contributor Guidelines</a>
+        <a href="/info-hub.html#terms">Terms</a>
+        <a href="/info-hub.html#privacy-policy">Privacy Policy</a>
+        <a href="/info-hub.html#copyright-notice">Copyright Notice</a>
+        <a href="/contact.html">Contact Us</a>
+        <a href="/support.html">Support DeepWiki.io</a>
+      </div>
+    </div>
+  </body>
+</html>

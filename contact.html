@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contact Us - DeepWiki.io</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script type="module">
+      import { initMenu } from './src/utils/menu.js';
+      
+      document.addEventListener('DOMContentLoaded', () => {
+        initMenu();
+      });
+    </script>
+    <style>
+      .contact-container {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        max-width: 600px;
+        width: 95%;
+        max-height: 90vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        z-index: 1100;
+        box-shadow: 
+          0 0 15px rgba(6, 114, 115, 0.35),
+          0 0 30px rgba(6, 114, 115, 0.25),
+          0 0 45px rgba(6, 114, 115, 0.15),
+          0 0 60px rgba(6, 114, 115, 0.1);
+        animation: formGlow 2s ease-in-out infinite alternate;
+      }
+      
+      .contact-header {
+        background-color: #07717c;
+        color: white;
+        padding: 15px 0;
+        text-align: center;
+        width: calc(100% + 60px);
+        margin: -30px -30px 25px -30px;
+        border-radius: 12px 12px 0 0;
+        position: relative;
+        left: 0;
+        right: 0;
+      }
+      
+      .contact-header h1 {
+        color: white;
+        margin: 0;
+        font-size: 28px;
+      }
+      
+      .form-group {
+        margin-bottom: 20px;
+      }
+      
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #07717c;
+        font-weight: 500;
+      }
+      
+      .form-group input, 
+      .form-group textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid rgba(6, 114, 115, 0.2);
+        border-radius: 6px;
+        font-size: 16px;
+        transition: all 0.2s ease;
+      }
+      
+      .form-group input:focus, 
+      .form-group textarea:focus {
+        outline: none;
+        border-color: #07717c;
+        box-shadow: 0 0 0 2px rgba(6, 114, 115, 0.1);
+      }
+      
+      .send-message-btn {
+        width: 100%;
+        padding: 14px;
+        background: #fac637;
+        color: #07717c;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      
+      .send-message-btn:hover {
+        background: #f8c832;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+      
+      .company-info {
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 1px solid rgba(7, 113, 124, 0.1);
+      }
+      
+      .company-info h2 {
+        color: #07717c;
+        margin-bottom: 20px;
+      }
+      
+      .info-item {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 15px;
+      }
+      
+      .info-item i {
+        color: #fac637;
+        margin-right: 15px;
+        margin-top: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="menu-header">
+      <img src="https://i.imgur.com/zcLQ3gB.png" alt="Menu Logo" class="menu-logo">
+      <div class="nav-links">
+        <div class="nav-container">
+          <a href="/publish.html" class="nav-item publish-nav">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 5v14"/>
+              <path d="M5 12h14"/>
+            </svg>
+            Publish
+          </a>
+          <a href="/index.html" class="nav-item archives-nav">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4v16a2 2 0 002 2h12a2 2 0 002-2V8.342a2 2 0 00-.602-1.43l-4.44-4.342A2 2 0 0013.56 2H6a2 2 0 00-2 2z"/>
+              <path d="M14 2v4a2 2 0 002 2h4"/>
+            </svg>
+            ARCHIVES
+          </a>
+          <a href="/collab.html" class="nav-item collab-nav">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+              <path d="M16 3.13a4 4 0 010 7.75"/>
+            </svg>
+            COLLAB
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="menu-overlay"></div>
+    <div class="menu-options info-menu"></div>
+    <div class="left-edge-trigger"></div>
+    <div class="menu-hamburger-indicator">
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+    </div>
+    
+    <div class="contact-container">
+      <div class="contact-header">
+        <h1>Contact Us</h1>
+      </div>
+      
+      <div class="contact-form">
+        <div class="form-group">
+          <label for="name">Name</label>
+          <input type="text" id="name" name="name" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="message">Message</label>
+          <textarea id="message" name="message" rows="6" required></textarea>
+        </div>
+        
+        <button type="submit" class="send-message-btn">Send Message</button>
+
+        <div class="company-info">
+          <h2>AVA Digital L.L.C</h2>
+          <div class="info-item">
+            <i class="fas fa-map-marker-alt"></i>
+            <p>1603 Capitol Ave Ste 415<br>Cheyenne WY 82001</p>
+          </div>
+          <div class="info-item">
+            <i class="fas fa-phone"></i>
+            <p><a href="tel:+13073135017">+1(307) 313-5017</a></p>
+          </div>
+          <div class="info-item">
+            <i class="fas fa-envelope"></i>
+            <p><a href="mailto:ava.dsa25@proton.me">ava.dsa25@proton.me</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

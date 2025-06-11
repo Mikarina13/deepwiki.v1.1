@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Settings - DeepWiki.io</title>
+    <link rel="stylesheet" href="/style.css">
+    <script type="module" src="/src/settings.js"></script>
+    <style>
+      .settings-container {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        max-width: 800px;
+        width: 95%;
+        max-height: 90vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        z-index: 1100;
+        box-shadow: 
+          0 0 15px rgba(6, 114, 115, 0.35),
+          0 0 30px rgba(6, 114, 115, 0.25),
+          0 0 45px rgba(6, 114, 115, 0.15),
+          0 0 60px rgba(6, 114, 115, 0.1);
+        animation: formGlow 2s ease-in-out infinite alternate;
+      }
+      
+      .settings-header-title {
+        background-color: #07717c;
+        color: white;
+        padding: 15px 0;
+        text-align: center;
+        width: calc(100% + 60px);
+        margin: -30px -30px 25px -30px;
+        border-radius: 12px 12px 0 0;
+        position: relative;
+        left: 0;
+        right: 0;
+      }
+      
+      .settings-header-title h1 {
+        color: white;
+        margin: 0;
+        font-size: 28px;
+      }
+      
+      .settings-section {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(6, 114, 115, 0.1);
+        transition: all 0.2s ease;
+      }
+      
+      .settings-section:hover {
+        box-shadow: 0 4px 12px rgba(6, 114, 115, 0.1);
+        border-color: rgba(6, 114, 115, 0.2);
+      }
+      
+      .settings-section h2 {
+        color: #07717c;
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        border-bottom: 1px solid rgba(6, 114, 115, 0.1);
+        padding-bottom: 10px;
+      }
+      
+      .form-group {
+        margin-bottom: 18px;
+      }
+      
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #07717c;
+        font-weight: 500;
+      }
+      
+      .form-group input[type="text"],
+      .form-group input[type="email"],
+      .form-group input[type="date"],
+      .form-group textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid rgba(6, 114, 115, 0.2);
+        border-radius: 6px;
+        font-size: 16px;
+        transition: all 0.2s ease;
+      }
+      
+      .form-group input[type="text"]:focus,
+      .form-group input[type="email"]:focus,
+      .form-group input[type="date"]:focus,
+      .form-group textarea:focus {
+        outline: none;
+        border-color: #07717c;
+        box-shadow: 0 0 0 2px rgba(6, 114, 115, 0.1);
+      }
+      
+      .form-group textarea {
+        resize: vertical;
+        min-height: 80px;
+      }
+      
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+      
+      @media (max-width: 600px) {
+        .form-row {
+          grid-template-columns: 1fr;
+        }
+      }
+      
+      .submit-button {
+        width: 100%;
+        padding: 12px;
+        background: #fac637;
+        color: #07717c;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-top: 10px;
+      }
+      
+      .submit-button:hover {
+        background: #f8c832;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+      
+      .checkbox-group {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 15px;
+      }
+      
+      .checkbox-group input[type="checkbox"] {
+        margin-top: 4px;
+        width: 18px;
+        height: 18px;
+        accent-color: #07717c;
+      }
+      
+      .checkbox-group label {
+        margin-bottom: 0;
+        cursor: pointer;
+        line-height: 1.4;
+      }
+      
+      .danger-zone {
+        border: 1px solid rgba(220, 53, 69, 0.3);
+      }
+      
+      .danger-zone h2 {
+        color: #dc3545;
+        border-color: rgba(220, 53, 69, 0.2);
+      }
+      
+      .danger-confirmation {
+        margin-bottom: 20px;
+        padding: 15px;
+        background: rgba(220, 53, 69, 0.05);
+        border-radius: 8px;
+        border: 1px solid rgba(220, 53, 69, 0.1);
+      }
+      
+      .danger-confirmation p {
+        color: #dc3545;
+        margin-bottom: 10px;
+        font-weight: 500;
+      }
+      
+      .danger-confirmation input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid rgba(220, 53, 69, 0.3);
+        border-radius: 6px;
+        font-size: 16px;
+      }
+      
+      .danger-button {
+        background: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+        border: 1px solid rgba(220, 53, 69, 0.3);
+        padding: 12px 20px;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        width: 100%;
+      }
+      
+      .danger-button:hover:not(:disabled) {
+        background: rgba(220, 53, 69, 0.15);
+        border-color: rgba(220, 53, 69, 0.4);
+        transform: translateY(-1px);
+      }
+      
+      .danger-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="menu-header">
+      <img src="https://i.imgur.com/zcLQ3gB.png" alt="Menu Logo" class="menu-logo">
+      <div class="nav-links">
+        <div class="nav-container">
+          <a href="/publish.html" class="nav-item publish-nav">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 5v14"/>
+              <path d="M5 12h14"/>
+            </svg>
+            Publish
+          </a>
+          <a href="/index.html" class="nav-item archives-nav">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4v16a2 2 0 002 2h12a2 2 0 002-2V8.342a2 2 0 00-.602-1.43l-4.44-4.342A2 2 0 0013.56 2H6a2 2 0 00-2 2z"/>
+              <path d="M14 2v4a2 2 0 002 2h4"/>
+            </svg>
+            ARCHIVES
+          </a>
+          <a href="/collab.html" class="nav-item collab-nav">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+              <path d="M16 3.13a4 4 0 010 7.75"/>
+            </svg>
+            COLLAB
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="menu-overlay"></div>
+    <div class="menu-options info-menu"></div>
+    <div class="left-edge-trigger"></div>
+    <div class="menu-hamburger-indicator">
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+    </div>
+    
+    <div class="settings-container">
+      <div class="settings-header-title">
+        <h1>Settings</h1>
+      </div>
+      
+      <div class="settings-section">
+        <h2>Account Settings</h2>
+        <form id="profile-form" class="settings-form">
+          <div class="form-group">
+            <label for="display-name">Display Name</label>
+            <input type="text" id="display-name" placeholder="Your display name">
+          </div>
+          
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="Your email" disabled>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="date-of-birth">Date of Birth</label>
+              <input type="date" id="date-of-birth">
+            </div>
+            <div class="form-group">
+              <label for="location">Location</label>
+              <input type="text" id="location" placeholder="City, Country">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="bio">Bio</label>
+            <textarea id="bio" rows="4" placeholder="Tell us about yourself..."></textarea>
+          </div>
+          
+          <button type="submit" class="submit-button">Save Changes</button>
+        </form>
+      </div>
+
+      <div class="settings-section">
+        <h2>Notification Preferences</h2>
+        <form id="notifications-form" class="settings-form">
+          <div class="checkbox-group">
+            <input type="checkbox" id="email-notifications">
+            <label for="email-notifications">Receive email notifications for new posts and collaborations</label>
+          </div>
+          
+          <div class="checkbox-group">
+            <input type="checkbox" id="collaboration-notifications">
+            <label for="collaboration-notifications">Receive collaboration notifications when someone responds to your posts</label>
+          </div>
+          
+          <div class="checkbox-group">
+            <input type="checkbox" id="weekly-digest">
+            <label for="weekly-digest">Receive a weekly digest of popular content</label>
+          </div>
+          
+          <button type="submit" class="submit-button">Save Preferences</button>
+        </form>
+      </div>
+
+      <div class="settings-section danger-zone">
+        <h2>Danger Zone</h2>
+        <div class="danger-confirmation">
+          <p>To delete your account, type "DELETE MY ACCOUNT" below:</p>
+          <input type="text" id="delete-confirmation" placeholder="Type DELETE MY ACCOUNT">
+        </div>
+        <button id="delete-account" class="danger-button" disabled>Delete Account</button>
+      </div>
+    </div>
+  </body>
+</html>
