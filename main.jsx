@@ -555,8 +555,8 @@ document.addEventListener('DOMContentLoaded', () => {
               <span class="author-name">DeepWiki Team</span>
             </div>
             <div class="card-metrics">
-              <span class="view-count">${post.views || 0} views</span>
-              <span class="favorite-count">❤️ ${post.favorite_count || 0}</span>
+              <span class="view-count">0 views</span>
+              <span class="favorite-count">❤️ 0</span>
             </div>
           </div>
           <div class="card-prompt">
@@ -646,4 +646,5 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="card-author">
               <span class="author-name">DeepWiki Community</span>
             </div>
-            <div
+            <div class="card-metrics">
+              <span class="view
