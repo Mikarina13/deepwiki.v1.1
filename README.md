@@ -10,6 +10,10 @@ DeepWiki is an experiment in community‑driven knowledge sharing. It lets peopl
 - **Favorites** – Save posts you find interesting for quick access.
 - **Activity & Info Hub** – Stay up to date with community activity and read documentation or help articles.
 
+## Responsive Layout
+
+DeepWiki's styles include media queries so every page remains readable and well aligned on mobile devices and large screens.
+
 ## Setup
 
 1. **Install Dependencies** – Make sure [Node.js](https://nodejs.org/) 18 or later is available, then run:
