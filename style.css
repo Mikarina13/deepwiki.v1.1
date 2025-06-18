@@ -404,7 +404,7 @@ body {
 
 .menu-options.active {
   transform: translateX(300px);
-  box-shadow: 
+  box-shadow:
     2px 0 15px rgba(6, 114, 115, 0.2),
     4px 0 8px rgba(6, 114, 115, 0.15),
     6px 0 20px rgba(6, 114, 115, 0.1),
@@ -663,7 +663,7 @@ body {
 }
 
 .search-bar input:focus {
-  box-shadow: 
+  box-shadow:
     0 1px 8px rgba(32, 33, 36, 0.45),
     0 0 15px rgba(7, 113, 124, 0.2),
     0 0 25px rgba(7, 113, 124, 0.1);
@@ -790,7 +790,7 @@ body {
   background: white;
   border-radius: 20px;
   padding: 30px; /* Increased from 24px */
-  box-shadow: 
+  box-shadow:
     0 6px 20px rgba(6, 114, 115, 0.08),
     0 3px 8px rgba(0, 0, 0, 0.06);
   border: 2px solid rgba(6, 114, 115, 0.1);
@@ -818,7 +818,7 @@ body {
 
 .knowledge-card.active-card {
   border: 2px solid #fac637;
-  box-shadow: 
+  box-shadow:
     0 8px 25px rgba(6, 114, 115, 0.15),
     0 4px 12px rgba(0, 0, 0, 0.1);
   z-index: 100 !important;
