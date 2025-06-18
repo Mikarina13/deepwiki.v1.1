@@ -20,11 +20,11 @@ DeepWiki is an experiment in community‑driven knowledge sharing. It lets peopl
 
 2. **Create or Connect to Supabase** – Sign up at [Supabase](https://supabase.com/) and create a new project or use an existing one. Save the project URL and anon key. If you plan to apply database migrations locally, install the Supabase CLI (`npm install -g supabase`) and link it to your project using `supabase link --project-ref <your-project-ref>`.
 
-3. **Configure Environment Variables** – Create a `.env` file at the project root with your Supabase credentials:
+3. **Configure Environment Variables** – Copy `.env.example` to `.env` and replace the placeholders with your own Supabase credentials. If the keys previously committed to this repository were used, revoke them in Supabase and generate new ones:
 
    ```bash
-   VITE_SUPABASE_URL=your-supabase-url
-   VITE_SUPABASE_ANON_KEY=your-anon-key
+   cp .env.example .env
+   # then edit .env with your values
    ```
 
 4. **Apply Database Migrations** – The SQL files inside `supabase/migrations` define the schema. Use the Supabase CLI to apply them:
