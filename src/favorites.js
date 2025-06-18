@@ -185,6 +185,31 @@ function createFavoriteElement(favorite) {
   return div;
 }
 
+// Helper function to get author name with proper fallbacks
+function getAuthorName(user) {
+  if (!user) return 'Anonymous';
+  
+  // Try different sources for the name in order of preference
+  const displayName = user.raw_user_meta_data?.display_name;
+  const fullName = user.raw_user_meta_data?.full_name;
+  const firstName = user.raw_user_meta_data?.first_name;
+  const lastName = user.raw_user_meta_data?.last_name;
+  const email = user.email;
+  
+  // Return the first available name
+  if (displayName) return displayName;
+  if (fullName) return fullName;
+  if (firstName && lastName) return `${firstName} ${lastName}`;
+  if (firstName) return firstName;
+  if (email) {
+    // Extract username from email (part before @)
+    const username = email.split('@')[0];
+    // Capitalize first letter and replace dots/underscores with spaces
+    return username.charAt(0).toUpperCase() + username.slice(1).replace(/[._]/g, ' ');
+  }
+  
+  return 'Anonymous';
+}
 function filterFavorites(filterType) {
   const favoriteItems = document.querySelectorAll('.favorite-item');
   const favoritesContent = document.getElementById('favorites-content');
