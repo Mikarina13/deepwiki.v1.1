@@ -45,5 +45,11 @@ npm run preview
 
 ## Tests
 
-This repository currently does not include automated tests. Test files would normally live next to the code inside the `src` directory.
+Run the automated tests with:
+
+```bash
+npm test
+```
+
+Sample tests live in the `tests/` directory and use [Vitest](https://vitest.dev/).
 
