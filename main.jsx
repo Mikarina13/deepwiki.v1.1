@@ -555,8 +555,8 @@ document.addEventListener('DOMContentLoaded', () => {
               <span class="author-name">DeepWiki Team</span>
             </div>
             <div class="card-metrics">
-              <span class="view-count">0 views</span>
-              <span class="favorite-count">❤️ 0</span>
+              <span class="view-count">${post.views || 0} views</span>
+              <span class="favorite-count">❤️ ${post.favorite_count || 0}</span>
             </div>
           </div>
           <div class="card-prompt">
@@ -646,117 +646,4 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="card-author">
               <span class="author-name">DeepWiki Community</span>
             </div>
-            <div class="card-metrics">
-              <span class="view-count">0 views</span>
-              <span class="favorite-count">❤️ 0</span>
-            </div>
-          </div>
-          <h3>No Collaboration Posts Yet</h3>
-          <div class="card-content-preview">
-            Be the first to share a collaboration opportunity! Click "COLLAB" to post your project and connect with other creators.
-          </div>
-          <div class="card-footer">
-            <div class="card-tags">
-              <span class="tag">collaboration</span>
-            </div>
-            <div class="card-meta">
-              <span class="post-date">📅 Today</span>
-              <span class="collab-type">🤝 Community</span>
-            </div>
-          </div>
-        </div>
-      `;
-      return;
-    }
-
-    carouselTrack.innerHTML = collabPosts.map(post => {
-      // Format dates
-      const postDate = new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-      
-      // Use anonymous author since we can't safely access user data
-      const authorName = getAuthorName(post.users);
-      
-      // Truncate description for preview
-      const descriptionPreview = post.description ? 
-        (post.description.length > 200 ? post.description.substring(0, 200) + '...' : post.description) :
-        'No description provided';
-
-      return `
-        <div class="knowledge-card collab-card" data-type="collab" data-post-id="${post.id}">
-          <div class="card-header">
-            <div class="card-author">
-              <span class="author-name">👤 ${authorName}</span>
-            </div>
-            <div class="card-metrics">
-              <span class="view-count">${post.views || 0} views</span>
-              <span class="favorite-count">❤️ ${post.favorite_count || 0}</span>
-            </div>
-          </div>
-          <h3>${post.title}</h3>
-          <div class="card-content-preview">
-            ${descriptionPreview}
-          </div>
-          <div class="card-footer">
-            <div class="card-tags">
-              ${post.tags.slice(0, 2).map(tag => `<span class="tag">${tag}</span>`).join('')}
-              ${post.tags.length > 2 ? `<span class="tag">+${post.tags.length - 2}</span>` : ''}
-            </div>
-            <div class="card-meta">
-              <span class="post-date">📅 ${postDate}</span>
-              <span class="collab-type">🤝 ${post.type}</span>
-            </div>
-          </div>
-        </div>
-      `;
-    }).join('');
-  }
-
-  // Get visible cards
-  function getVisibleCards() {
-    return document.querySelectorAll('.knowledge-card');
-  }
-
-  // Update carousel position
-  function updateCarouselPosition() {
-    const cards = getVisibleCards();
-    if (cards.length === 0) return;
-
-    cards.forEach((card, index) => {
-      card.classList.remove('active', 'prev', 'next');
-      
-      if (index === currentSlide) {
-        card.classList.add('active');
-      } else if (index === currentSlide - 1) {
-        card.classList.add('prev');
-      } else if (index === currentSlide + 1) {
-        card.classList.add('next');
-      }
-    });
-  }
-
-  // Carousel navigation
-  prevBtn.addEventListener('click', () => {
-    const cards = getVisibleCards();
-    if (currentSlide > 0) {
-      currentSlide--;
-      updateCarouselPosition();
-    }
-  });
-
-  nextBtn.addEventListener('click', () => {
-    const cards = getVisibleCards();
-    if (currentSlide < cards.length - 1) {
-      currentSlide++;
-      updateCarouselPosition();
-    }
-  });
-
-  // Initialize carousel
-  initializeCarousel();
-});
-
-// Search functionality placeholder
-function performSearch() {
-  console.log('Performing search with filters:', currentFilters);
-  // Search implementation would go here
-}
+            <div
