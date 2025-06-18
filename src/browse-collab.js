@@ -250,10 +250,7 @@ async function displayPosts(posts) {
 
 async function createPostCard(post) {
   // Get author name
-  const authorName = post.users?.raw_user_meta_data?.display_name || 
-                    post.users?.raw_user_meta_data?.full_name || 
-                    post.users?.email?.split('@')[0] || 
-                    'Anonymous';
+  const authorName = getAuthorName(post.users);
   
   // Format date
   const postDate = new Date(post.created_at).toLocaleDateString('en-US', { 
@@ -632,6 +629,31 @@ function getCurrentFilters() {
   };
 }
 
+// Helper function to get author name with proper fallbacks
+function getAuthorName(user) {
+  if (!user) return 'Anonymous';
+  
+  // Try different sources for the name in order of preference
+  const displayName = user.raw_user_meta_data?.display_name;
+  const fullName = user.raw_user_meta_data?.full_name;
+  const firstName = user.raw_user_meta_data?.first_name;
+  const lastName = user.raw_user_meta_data?.last_name;
+  const email = user.email;
+  
+  // Return the first available name
+  if (displayName) return displayName;
+  if (fullName) return fullName;
+  if (firstName && lastName) return `${firstName} ${lastName}`;
+  if (firstName) return firstName;
+  if (email) {
+    // Extract username from email (part before @)
+    const username = email.split('@')[0];
+    // Capitalize first letter and replace dots/underscores with spaces
+    return username.charAt(0).toUpperCase() + username.slice(1).replace(/[._]/g, ' ');
+  }
+  
+  return 'Anonymous';
+}
 function showLoading() {
   const container = document.getElementById('posts-container');
   container.innerHTML = `
