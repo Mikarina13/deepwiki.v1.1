@@ -647,4 +647,257 @@ function renderCollabCards() {
     return;
   }
 
-  carouselTrack.innerHTML = collabPosts.map(
+  carouselTrack.innerHTML = collabPosts.map(post => {
+    // Format dates
+    const postDate = new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    
+    // Format author name with capitalization and spacing
+    const authorName = post.users?.raw_user_meta_data?.display_name || 
+                      post.users?.raw_user_meta_data?.full_name || 
+                      (post.users?.email ? 
+                        post.users.email.split('@')[0]
+                          .replace(/[._]/g, ' ')
+                          .replace(/\b\w/g, l => l.toUpperCase()) 
+                        : 'Anonymous User');
+    
+    // Truncate description for preview
+    const descriptionPreview = post.description ? 
+      (post.description.length > 200 ? post.description.substring(0, 200) + '...' : post.description) :
+      'No description available';
+
+    return `
+      <div class="knowledge-card collab-card" data-type="collab" data-post-id="${post.id}">
+        <div class="card-header">
+          <div class="card-author">
+            <span class="author-name">👤 By ${authorName}</span>
+          </div>
+          <div class="card-metrics">
+            <span class="view-count">${post.views || 0} views</span>
+            <span class="favorite-count">❤️ ${post.favorite_count || 0}</span>
+          </div>
+        </div>
+        <h3>${post.title}</h3>
+        <div class="card-content-preview">
+          ${descriptionPreview}
+        </div>
+        <div class="card-footer">
+          <div class="card-tags">
+            ${post.tags.slice(0, 2).map(tag => `<span class="tag">${tag}</span>`).join('')}
+            ${post.tags.length > 2 ? `<span class="tag">+${post.tags.length - 2}</span>` : ''}
+          </div>
+          <div class="card-meta">
+            <span class="post-date">📅 ${postDate}</span>
+            <span class="collab-type">🤝 ${post.type}</span>
+            <span class="contact-info">📧 ${post.contact_email}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// Get visible cards for carousel navigation
+function getVisibleCards() {
+  return document.querySelectorAll('.knowledge-card');
+}
+
+// Update carousel position
+function updateCarouselPosition() {
+  const cards = getVisibleCards();
+  if (cards.length === 0) return;
+
+  // Remove active class from all cards
+  cards.forEach(card => card.classList.remove('active'));
+  
+  // Add active class to current slide
+  if (cards[currentSlide]) {
+    cards[currentSlide].classList.add('active');
+  }
+
+  // Update navigation buttons
+  prevBtn.disabled = currentSlide === 0;
+  nextBtn.disabled = currentSlide >= cards.length - 1;
+}
+
+// Carousel navigation
+prevBtn.addEventListener('click', () => {
+  if (currentSlide > 0) {
+    currentSlide--;
+    updateCarouselPosition();
+  }
+});
+
+nextBtn.addEventListener('click', () => {
+  const cards = getVisibleCards();
+  if (currentSlide < cards.length - 1) {
+    currentSlide++;
+    updateCarouselPosition();
+  }
+});
+
+// Navigation switching between archive and collab
+navItems.forEach(item => {
+  item.addEventListener('click', (e) => {
+    e.preventDefault();
+    
+    // Remove active class from all nav items
+    navItems.forEach(nav => nav.classList.remove('active'));
+    
+    // Add active class to clicked item
+    item.classList.add('active');
+    
+    // Update carousel type based on navigation
+    if (item.classList.contains('collab-nav')) {
+      currentCarouselType = 'collab';
+    } else if (item.classList.contains('archives-nav')) {
+      currentCarouselType = 'archive';
+    }
+    
+    // Update carousel content
+    updateCarouselContent();
+    
+    // Navigate to the appropriate page
+    window.location.href = item.href;
+  });
+});
+
+// Search functionality
+async function performSearch() {
+  const query = searchInput.value.trim();
+  if (!query) return;
+
+  searchLoading.style.display = 'block';
+  searchResults.innerHTML = '';
+  archiveResultsContainer.style.display = 'block';
+
+  try {
+    let queryBuilder = supabase
+      .from('archive_posts')
+      .select('*')
+      .or(`title.ilike.%${query}%, content.ilike.%${query}%, tags.cs.{${query}}`);
+
+    // Apply filters
+    if (currentFilters.aiModel.length > 0) {
+      const aiModelConditions = currentFilters.aiModel.map(model => {
+        if (model === 'gpt-4') return 'ai_model.ilike.%gpt-4%';
+        if (model === 'claude') return 'ai_model.ilike.%claude%';
+        if (model === 'gemini') return 'ai_model.ilike.%gemini%,ai_model.ilike.%bard%';
+        return `ai_model.ilike.%${model}%`;
+      }).join(',');
+      queryBuilder = queryBuilder.or(aiModelConditions);
+    }
+
+    if (currentFilters.contentType === 'text') {
+      queryBuilder = queryBuilder.is('embed_url', null);
+    } else if (currentFilters.contentType === 'embedded') {
+      queryBuilder = queryBuilder.not('embed_url', 'is', null);
+    }
+
+    if (currentFilters.dateFrom) {
+      queryBuilder = queryBuilder.gte('generation_date', currentFilters.dateFrom);
+    }
+    if (currentFilters.dateTo) {
+      queryBuilder = queryBuilder.lte('generation_date', currentFilters.dateTo);
+    }
+
+    if (currentFilters.viewsMin) {
+      queryBuilder = queryBuilder.gte('views', parseInt(currentFilters.viewsMin));
+    }
+    if (currentFilters.viewsMax) {
+      queryBuilder = queryBuilder.lte('views', parseInt(currentFilters.viewsMax));
+    }
+
+    const { data, error } = await queryBuilder
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    if (error) throw error;
+
+    displaySearchResults(data || []);
+  } catch (error) {
+    console.error('Search error:', error);
+    searchResults.innerHTML = '<p class="error">Search failed. Please try again.</p>';
+  } finally {
+    searchLoading.style.display = 'none';
+  }
+}
+
+// Display search results
+function displaySearchResults(posts) {
+  if (posts.length === 0) {
+    searchResults.innerHTML = '<p class="empty-state">No posts found matching your search.</p>';
+    return;
+  }
+
+  searchResults.innerHTML = posts.map(post => {
+    const postDate = new Date(post.created_at).toLocaleDateString();
+    const contentPreview = post.content ? 
+      (post.content.length > 200 ? post.content.substring(0, 200) + '...' : post.content) :
+      'Content available via embedded link';
+
+    return `
+      <div class="search-result-item" data-post-id="${post.id}">
+        <div class="result-header">
+          <h3>${post.title}</h3>
+          <div class="result-metrics">
+            <span>${post.views || 0} views</span>
+            <span>📅 ${postDate}</span>
+          </div>
+        </div>
+        <div class="result-content">
+          ${contentPreview}
+        </div>
+        <div class="result-footer">
+          <div class="result-tags">
+            ${post.tags.slice(0, 3).map(tag => `<span class="tag">${tag}</span>`).join('')}
+          </div>
+          <span class="ai-model">🤖 ${post.ai_model}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Add click handlers for search results
+  document.querySelectorAll('.search-result-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const postId = item.dataset.postId;
+      window.location.href = `/view-post.html?id=${postId}&type=archive`;
+    });
+  });
+}
+
+// Search event listeners
+searchButton.addEventListener('click', performSearch);
+searchInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    performSearch();
+  }
+});
+
+// Close search results
+closeSearchBtn.addEventListener('click', () => {
+  archiveResultsContainer.style.display = 'none';
+  searchInput.value = '';
+});
+
+// Browse button functionality
+browseButton.addEventListener('click', () => {
+  window.location.href = '/browse-archive.html';
+});
+
+// Initialize carousel on page load
+document.addEventListener('DOMContentLoaded', () => {
+  initializeCarousel();
+});
+
+// Card click handlers for carousel
+document.addEventListener('click', (e) => {
+  const card = e.target.closest('.knowledge-card');
+  if (card) {
+    const postId = card.dataset.postId;
+    const postType = card.dataset.type;
+    if (postId && postType) {
+      window.location.href = `/view-post.html?id=${postId}&type=${postType}`;
+    }
+  }
+});
