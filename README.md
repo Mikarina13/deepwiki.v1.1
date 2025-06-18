@@ -18,3 +18,4 @@ npm install
 npm run dev
 ```
 
+Once started, open http://localhost:5173 to view the site.
