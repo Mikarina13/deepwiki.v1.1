@@ -1012,4 +1012,65 @@ body {
   transform: translateX(-50%);
   z-index: 1001;
   opacity: 0;
-  transition: all 0.6s cubic
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Responsive layout adjustments */
+@media (max-width: 768px) {
+  .chapter-nav {
+    position: static;
+    width: 100%;
+    height: auto;
+  }
+
+  .chapter-nav ul {
+    height: auto;
+  }
+
+  .nav-container {
+    flex-direction: column;
+  }
+
+  .nav-item {
+    border-right: none;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.15);
+  }
+
+  .nav-item:last-child {
+    border-bottom: none;
+  }
+
+  .knowledge-card {
+    position: static;
+    width: 100%;
+    max-width: 420px;
+    height: auto;
+    margin: 0 auto;
+  }
+
+  .menu-options {
+    width: 100%;
+  }
+
+  .sliding-image-left,
+  .sliding-image-right,
+  .middle-image {
+    display: none;
+  }
+
+  .activity-container,
+  .browse-container,
+  .contact-container,
+  .favorites-container,
+  .help-container,
+  .login-container,
+  .publish-container,
+  .profile-container,
+  .settings-container,
+  .support-container,
+  .view-post-container {
+    max-width: 100%;
+    width: 95%;
+    padding: 20px;
+  }
+}
