@@ -11,12 +11,12 @@ let currentUser = null;
 document.addEventListener('DOMContentLoaded', async () => {
   // Initialize the side menu
   initMenu();
-  
+
   // Load user data
   const { data: { session } } = await supabase.auth.getSession();
   if (session) {
     currentUser = session.user;
-    
+
     const profileName = document.getElementById('profile-name');
     const profileEmail = document.getElementById('profile-email');
     const profileLocation = document.getElementById('profile-location');
@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const profileBio = document.getElementById('profile-bio');
     const profileImage = document.getElementById('profile-image');
     const profileDob = document.getElementById('profile-dob');
-    
+
     profileEmail.textContent = session.user.email;
     profileName.textContent = session.user.user_metadata?.display_name || 'Anonymous User';
 
@@ -39,24 +39,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Load additional profile data
     if (session.user.user_metadata) {
       const { location, website, bio, date_of_birth } = session.user.user_metadata;
-      
+
       // Handle location
       if (location) {
         profileLocation.querySelector('.meta-text').textContent = location;
       }
-      
+
       // Handle website
       if (website) {
         const websiteLink = profileWebsite.querySelector('a');
         websiteLink.href = website;
         websiteLink.textContent = new URL(website).hostname;
       }
-      
+
       // Handle bio
       if (bio) {
         profileBio.textContent = bio;
       }
-      
+
       // Handle date of birth
       if (date_of_birth) {
         profileDob.style.display = 'flex';
@@ -100,7 +100,7 @@ async function loadUserPosts() {
 
     // Display archive posts
     displayArchivePosts(archivePosts || []);
-    
+
     // Display collab posts
     displayCollabPosts(collabPosts || []);
 
@@ -137,15 +137,15 @@ function displayArchivePosts(posts) {
   archivePostsContainer.innerHTML = posts.map(post => {
     // Format dates
     const postDate = new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    const genDate = post.generation_date ? 
-      new Date(post.generation_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 
+    const genDate = post.generation_date ?
+      new Date(post.generation_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) :
       postDate;
 
     // Truncate content for preview
     let contentPreview = '';
     if (post.embed_url) {
       const isGoogleDoc = isGoogleDocsUrl(post.embed_url);
-      
+
       if (isGoogleDoc) {
         contentPreview = `
           <div class="post-embed">
@@ -160,7 +160,7 @@ function displayArchivePosts(posts) {
                 </svg>
               </div>
               <h5 style="color: #067273; margin-bottom: 8px; font-size: 14px; font-weight: 600;">Document Link</h5>
-              <a href="${post.embed_url}" target="_blank" rel="noopener noreferrer" 
+              <a href="${post.embed_url}" target="_blank" rel="noopener noreferrer"
                  style="display: inline-flex; align-items: center; gap: 6px; background: #067273; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 12px;">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
@@ -175,10 +175,10 @@ function displayArchivePosts(posts) {
       } else {
         contentPreview = `
           <div class="post-embed">
-            <iframe 
-              src="${post.embed_url}" 
-              width="100%" 
-              height="200" 
+            <iframe
+              src="${post.embed_url}"
+              width="100%"
+              height="200"
               frameborder="0"
               sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
               loading="lazy"
@@ -280,13 +280,13 @@ function displayCollabPosts(posts) {
   collabPostsContainer.innerHTML = posts.map(post => {
     // Format date
     const postDate = new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    
+
     // Format type
     const typeDisplay = post.type === 'request' ? 'Looking for Collaboration' : 'Offering to Collaborate';
     const typeIcon = post.type === 'request' ? '🔍' : '🎯';
 
     // Truncate description for preview
-    const descriptionPreview = post.description ? 
+    const descriptionPreview = post.description ?
       (post.description.length > 200 ? post.description.substring(0, 200) + '...' : post.description) :
       'No description available';
 
@@ -380,7 +380,7 @@ function formatDate(dateString) {
 }
 
 function isGoogleDocsUrl(url) {
-  return url.includes('docs.google.com') || 
+  return url.includes('docs.google.com') ||
          url.includes('drive.google.com') ||
          url.includes('sheets.google.com') ||
          url.includes('slides.google.com');
