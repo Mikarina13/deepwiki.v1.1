@@ -417,234 +417,981 @@ function updateCurrentFilters() {
   currentFilters.viewsMax = document.querySelector('input[name="views-max"]').value;
 }
 
-// Helper function to get author name with proper fallbacks
-function getAuthorName(user) {
-  if (!user) return 'Anonymous';
-  
-  // Try different sources for the name in order of preference
-  const displayName = user.raw_user_meta_data?.display_name;
-  const fullName = user.raw_user_meta_data?.full_name;
-  const firstName = user.raw_user_meta_data?.first_name;
-  const lastName = user.raw_user_meta_data?.last_name;
-  const email = user.email;
-  
-  // Return the first available name
-  if (displayName) return displayName;
-  if (fullName) return fullName;
-  if (firstName && lastName) return `${firstName} ${lastName}`;
-  if (firstName) return firstName;
-  if (email) {
-    // Extract username from email (part before @)
-    const username = email.split('@')[0];
-    // Capitalize first letter and replace dots/underscores with spaces
-    return username.charAt(0).toUpperCase() + username.slice(1).replace(/[._]/g, ' ');
+// Load real posts from database - Fixed to handle RLS policies properly
+async function loadCarouselData() {
+  try {
+    // Load archive posts without joining users table to avoid RLS issues
+    const { data: archiveData, error: archiveError } = await supabase
+      .from('archive_posts')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(10);
+
+    if (archiveError) {
+      console.error('Archive error:', archiveError);
+      throw archiveError;
+    }
+
+    // Load collab posts without joining users table to avoid RLS issues
+    const { data: collabData, error: collabError } = await supabase
+      .from('collab_posts')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (collabError) {
+      console.error('Collab error:', collabError);
+      throw collabError;
+    }
+
+    // Get favorite counts for each post (these queries should work with public access)
+    if (archiveData) {
+      for (let post of archiveData) {
+        try {
+          const { data: favData } = await supabase
+            .from('user_favorites')
+            .select('id')
+            .eq('post_id', post.id)
+            .eq('post_type', 'archive');
+          post.favorite_count = favData ? favData.length : 0;
+        } catch (favError) {
+          console.warn('Could not load favorite count for archive post:', post.id, favError);
+          post.favorite_count = 0;
+        }
+      }
+    }
+
+    if (collabData) {
+      for (let post of collabData) {
+        try {
+          const { data: favData } = await supabase
+            .from('user_favorites')
+            .select('id')
+            .eq('post_id', post.id)
+            .eq('post_type', 'collab');
+          post.favorite_count = favData ? favData.length : 0;
+        } catch (favError) {
+          console.warn('Could not load favorite count for collab post:', post.id, favError);
+          post.favorite_count = 0;
+        }
+      }
+    }
+
+    archivePosts = archiveData || [];
+    collabPosts = collabData || [];
+
+    // Initialize carousel with real data
+    updateCarouselContent();
+  } catch (error) {
+    console.error('Error loading carousel data:', error);
+    // Fallback to empty carousel with helpful message
+    archivePosts = [];
+    collabPosts = [];
+    updateCarouselContent();
   }
-  
-  return 'Anonymous';
 }
 
-// Initialize the application
-document.addEventListener('DOMContentLoaded', () => {
-  // Load real posts from database - Fixed to handle RLS policies properly
-  async function loadCarouselData() {
-    try {
-      // Load archive posts without joining users table to avoid RLS issues
-      const { data: archiveData, error: archiveError } = await supabase
-        .from('archive_posts')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(10);
+// Initialize carousel based on current page
+function initializeCarousel() {
+  const isCollab = document.querySelector('.collab-nav').classList.contains('active');
+  currentCarouselType = isCollab ? 'collab' : 'archive';
+  loadCarouselData();
+}
 
-      if (archiveError) {
-        console.error('Archive error:', archiveError);
-        throw archiveError;
-      }
-
-      // Load collab posts without joining users table to avoid RLS issues
-      const { data: collabData, error: collabError } = await supabase
-        .from('collab_posts')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (collabError) {
-        console.error('Collab error:', collabError);
-        throw collabError;
-      }
-
-      // Get favorite counts for each post (these queries should work with public access)
-      if (archiveData) {
-        for (let post of archiveData) {
-          try {
-            const { data: favData } = await supabase
-              .from('user_favorites')
-              .select('id')
-              .eq('post_id', post.id)
-              .eq('post_type', 'archive');
-            post.favorite_count = favData ? favData.length : 0;
-          } catch (favError) {
-            console.warn('Could not load favorite count for archive post:', post.id, favError);
-            post.favorite_count = 0;
-          }
-        }
-      }
-
-      if (collabData) {
-        for (let post of collabData) {
-          try {
-            const { data: favData } = await supabase
-              .from('user_favorites')
-              .select('id')
-              .eq('post_id', post.id)
-              .eq('post_type', 'collab');
-            post.favorite_count = favData ? favData.length : 0;
-          } catch (favError) {
-            console.warn('Could not load favorite count for collab post:', post.id, favError);
-            post.favorite_count = 0;
-          }
-        }
-      }
-
-      archivePosts = archiveData || [];
-      collabPosts = collabData || [];
-
-      // Initialize carousel with real data
-      updateCarouselContent();
-    } catch (error) {
-      console.error('Error loading carousel data:', error);
-      // Fallback to empty carousel with helpful message
-      archivePosts = [];
-      collabPosts = [];
-      updateCarouselContent();
-    }
+// Update carousel content based on type
+function updateCarouselContent() {
+  const carouselTrack = document.querySelector('#carousel-track');
+  
+  if (currentCarouselType === 'archive') {
+    carouselTitle.textContent = 'Knowledge Spotlights';
+    carouselSubtitle.textContent = 'Discover Popular Topics';
+    renderArchiveCards();
+  } else {
+    carouselTitle.textContent = 'Vibe Task Feed';
+    carouselSubtitle.textContent = 'Discover latest Collab shared';
+    renderCollabCards();
   }
 
-  // Initialize carousel based on current page
-  function initializeCarousel() {
-    const isCollab = document.querySelector('.collab-nav').classList.contains('active');
-    currentCarouselType = isCollab ? 'collab' : 'archive';
-    loadCarouselData();
+  currentSlide = Math.min(2, getVisibleCards().length - 1); // Reset to middle card or last if fewer cards
+  updateCarouselPosition();
+}
+
+// Render archive cards with real data - Updated to not depend on user data
+function renderArchiveCards() {
+  const carouselTrack = document.querySelector('#carousel-track');
+  
+  if (archivePosts.length === 0) {
+    carouselTrack.innerHTML = `
+      <div class="knowledge-card archive-card" data-type="archive">
+        <div class="card-header">
+          <div class="card-author">
+            <span class="author-name">DeepWiki Team</span>
+          </div>
+          <div class="card-metrics">
+            <span class="view-count">0 views</span>
+            <span class="favorite-count">❤️ 0</span>
+          </div>
+        </div>
+        <div class="card-prompt">
+          <strong>Prompt:</strong> Get started with DeepWiki.io
+        </div>
+        <h3>No Archive Posts Yet</h3>
+        <div class="card-content-preview">
+          Be the first to share your AI insights! Click "Publish" to add your content to the archive and help build our community knowledge base.
+        </div>
+        <div class="card-footer">
+          <div class="card-tags">
+            <span class="tag">getting started</span>
+          </div>
+          <div class="card-meta">
+            <span class="post-date">📅 Today</span>
+            <span class="ai-model">🤖 Community</span>
+          </div>
+        </div>
+      </div>
+    `;
+    return;
   }
 
-  // Update carousel content based on type
-  function updateCarouselContent() {
-    const carouselTrack = document.querySelector('#carousel-track');
+  carouselTrack.innerHTML = archivePosts.map(post => {
+    // Format dates
+    const postDate = new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const genDate = post.generation_date ? 
+      new Date(post.generation_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 
+      postDate;
     
-    if (currentCarouselType === 'archive') {
-      carouselTitle.textContent = 'Knowledge Spotlights';
-      carouselSubtitle.textContent = 'Discover Popular Topics';
-      renderArchiveCards();
-    } else {
-      carouselTitle.textContent = 'Vibe Task Feed';
-      carouselSubtitle.textContent = 'Discover latest Collab shared';
-      renderCollabCards();
-    }
+    // Use anonymous author since we can't safely access user data
+    const authorName = 'Community Member';
+    
+    // Truncate content for preview (doubled size as requested)
+    const contentPreview = post.content ? 
+      (post.content.length > 300 ? post.content.substring(0, 300) + '...' : post.content) :
+      'Content available via embedded link';
 
-    currentSlide = Math.min(2, getVisibleCards().length - 1); // Reset to middle card or last if fewer cards
+    // Truncate prompt for display
+    const promptPreview = (post.prompt_is_public !== false && post.prompt) ? 
+      (post.prompt.length > 100 ? post.prompt.substring(0, 100) + '...' : post.prompt) :
+      null;
+
+    return `
+      <div class="knowledge-card archive-card" data-type="archive" data-post-id="${post.id}">
+        <div class="card-header">
+          <div class="card-author">
+            <span class="author-name">👤 ${authorName}</span>
+          </div>
+          <div class="card-metrics">
+            <span class="view-count">${post.views || 0} views</span>
+            <span class="favorite-count">❤️ ${post.favorite_count || 0}</span>
+          </div>
+        </div>
+        ${promptPreview ? `
+          <div class="card-prompt">
+            <strong>Prompt:</strong> ${promptPreview}
+          </div>
+        ` : ''}
+        <h3>${post.title}</h3>
+        <div class="card-content-preview">
+          ${contentPreview}
+        </div>
+        <div class="card-footer">
+          <div class="card-tags">
+            ${post.tags.slice(0, 2).map(tag => `<span class="tag">${tag}</span>`).join('')}
+            ${post.tags.length > 2 ? `<span class="tag">+${post.tags.length - 2}</span>` : ''}
+          </div>
+          <div class="card-meta">
+            <span class="post-date">📅 ${genDate}</span>
+            <span class="ai-model">🤖 ${post.ai_model}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// Render collab cards with real data - Updated to not depend on user data
+function renderCollabCards() {
+  const carouselTrack = document.querySelector('#carousel-track');
+  
+  if (collabPosts.length === 0) {
+    carouselTrack.innerHTML = `
+      <div class="knowledge-card collab-card" data-type="collab">
+        <div class="card-header">
+          <div class="card-author">
+            <span class="author-name">DeepWiki Community</span>
+          </div>
+          <div class="card-metrics">
+            <span class="view-count">0 views</span>
+            <span class="favorite-count">❤️ 0</span>
+          </div>
+        </div>
+        <h3>No Collaboration Posts Yet</h3>
+        <div class="card-content-preview">
+          Start connecting with the community! Share your collaboration ideas or skills to find like-minded people and build amazing projects together.
+        </div>
+        <div class="card-footer">
+          <div class="card-tags">
+            <span class="tag">networking</span>
+          </div>
+          <div class="card-meta">
+            <span class="post-date">📅 Today</span>
+            <span class="collab-type">🤝 Community</span>
+          </div>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  carouselTrack.innerHTML = collabPosts.map(post => {
+    // Format date
+    const postDate = new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    
+    // Use anonymous author since we can't safely access user data
+    const authorName = 'Community Member';
+    
+    // Truncate description for preview (doubled size as requested)
+    const descriptionPreview = post.description ? 
+      (post.description.length > 300 ? post.description.substring(0, 300) + '...' : post.description) :
+      'Collaboration opportunity';
+
+    const typeDisplay = post.type === 'request' ? 'Looking for' : 'Offering';
+    const typeIcon = post.type === 'request' ? '🔍' : '🎯';
+
+    return `
+      <div class="knowledge-card collab-card" data-type="collab" data-post-id="${post.id}">
+        <div class="card-header">
+          <div class="card-author">
+            <span class="author-name">👤 ${authorName}</span>
+          </div>
+          <div class="card-metrics">
+            <span class="view-count">${post.views || 0} views</span>
+            <span class="favorite-count">❤️ ${post.favorite_count || 0}</span>
+          </div>
+        </div>
+        <h3>${post.title}</h3>
+        <div class="card-content-preview">
+          ${descriptionPreview}
+        </div>
+        <div class="card-footer">
+          <div class="card-tags">
+            ${post.tags.slice(0, 2).map(tag => `<span class="tag">${tag}</span>`).join('')}
+            ${post.tags.length > 2 ? `<span class="tag">+${post.tags.length - 2}</span>` : ''}
+          </div>
+          <div class="card-meta">
+            <span class="post-date">📅 ${postDate}</span>
+            <span class="collab-type">${typeIcon} ${typeDisplay}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// Get currently visible cards
+function getVisibleCards() {
+  return document.querySelectorAll(`.${currentCarouselType}-card`);
+}
+
+// Update carousel position with enhanced 3D effects and spacing
+function updateCarouselPosition() {
+  const visibleCards = getVisibleCards();
+  
+  if (visibleCards.length === 0) return;
+  
+  visibleCards.forEach((card, index) => {
+    const offset = index - currentSlide;
+    const absOffset = Math.abs(offset);
+    
+    // Reduced 3D transforms with better spacing and reduced scale
+    const translateX = offset * 300; // Reduced horizontal spacing
+    const rotateY = offset * 10; // Reduced rotation
+    const scale = absOffset === 0 ? 1.05 : Math.max(0.75, 1 - (absOffset * 0.15)); // Reduced scale for active card
+    const translateZ = absOffset === 0 ? 40 : -absOffset * 40; // Reduced depth
+    const blur = absOffset === 0 ? 0 : Math.min(absOffset * 1.2, 3); // Reduced blur
+    
+    // Apply smooth transforms with better easing
+    card.style.transform = `
+      translateX(${translateX}px) 
+      translateZ(${translateZ}px) 
+      rotateY(${rotateY}deg) 
+      scale(${scale})
+    `;
+    
+    // Apply blur filter with smooth transitions
+    card.style.filter = `blur(${blur}px)`;
+    
+    // Enhanced active card highlighting
+    if (absOffset === 0) {
+      card.classList.add('active-card');
+    } else {
+      card.classList.remove('active-card');
+    }
+    
+    // Better z-index layering
+    card.style.zIndex = 100 - absOffset * 10;
+    
+    // Opacity adjustments for better depth perception
+    card.style.opacity = absOffset === 0 ? 1 : Math.max(0.5, 1 - (absOffset * 0.25));
+  });
+  
+  // Update navigation button states
+  prevBtn.disabled = currentSlide === 0;
+  nextBtn.disabled = currentSlide >= visibleCards.length - 1;
+}
+
+// Carousel navigation with smooth transitions
+prevBtn.addEventListener('click', () => {
+  if (currentSlide > 0) {
+    currentSlide--;
     updateCarouselPosition();
   }
+});
 
-  // Render archive cards with real data - Updated to not depend on user data
-  function renderArchiveCards() {
-    const carouselTrack = document.querySelector('#carousel-track');
+nextBtn.addEventListener('click', () => {
+  const visibleCards = getVisibleCards();
+  if (currentSlide < visibleCards.length - 1) {
+    currentSlide++;
+    updateCarouselPosition();
+  }
+});
+
+// Enhanced mouse wheel navigation with faster scrolling (increased by 50%)
+const carouselContainer = document.querySelector('.knowledge-carousel');
+let isScrolling = false;
+
+carouselContainer.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  
+  // Prevent multiple rapid scrolls
+  if (isScrolling) return;
+  isScrolling = true;
+  
+  const visibleCards = getVisibleCards();
+  
+  if (e.deltaY > 0 && currentSlide < visibleCards.length - 1) {
+    // Scroll down/right - next card
+    currentSlide++;
+    updateCarouselPosition();
+  } else if (e.deltaY < 0 && currentSlide > 0) {
+    // Scroll up/left - previous card
+    currentSlide--;
+    updateCarouselPosition();
+  }
+  
+  // Reset scroll lock after animation completes - reduced from 600ms to 400ms for 50% faster scrolling
+  setTimeout(() => {
+    isScrolling = false;
+  }, 400);
+});
+
+// Add click handler for carousel cards to increment view count and navigate to post
+carouselContainer.addEventListener('click', async (e) => {
+  const card = e.target.closest('.knowledge-card');
+  if (!card) return;
+  
+  const postId = card.dataset.postId;
+  const postType = card.dataset.type;
+  
+  if (postId && postType) {
+    // Increment view count in database
+    try {
+      const table = postType === 'archive' ? 'archive_posts' : 'collab_posts';
+      
+      // First, get the current view count
+      const { data: currentPost, error: selectError } = await supabase
+        .from(table)
+        .select('views')
+        .eq('id', postId)
+        .single();
+      
+      if (selectError) {
+        console.error('Error fetching current view count:', selectError);
+      } else {
+        // Increment the view count
+        const newViewCount = (currentPost.views || 0) + 1;
+        
+        // Update the database with the new view count
+        const { error: updateError } = await supabase
+          .from(table)
+          .update({ views: newViewCount })
+          .eq('id', postId);
+        
+        if (!updateError) {
+          // Update display
+          const viewCountElement = card.querySelector('.view-count');
+          if (viewCountElement) {
+            viewCountElement.textContent = `${newViewCount} views`;
+          }
+        } else {
+          console.error('Error updating view count:', updateError);
+        }
+      }
+    } catch (error) {
+      console.error('Error updating view count:', error);
+    }
     
-    if (archivePosts.length === 0) {
-      carouselTrack.innerHTML = `
-        <div class="knowledge-card archive-card" data-type="archive">
-          <div class="card-header">
-            <div class="card-author">
-              <span class="author-name">DeepWiki Team</span>
-            </div>
-            <div class="card-metrics">
-              <span class="view-count">0 views</span>
-              <span class="favorite-count">❤️ 0</span>
-            </div>
-          </div>
-          <div class="card-prompt">
-            <strong>Prompt:</strong> Get started with DeepWiki.io
-          </div>
-          <h3>No Archive Posts Yet</h3>
-          <div class="card-content-preview">
-            Be the first to share your AI insights! Click "Publish" to add your content to the archive and help build our community knowledge base.
-          </div>
-          <div class="card-footer">
-            <div class="card-tags">
-              <span class="tag">getting started</span>
-            </div>
-            <div class="card-meta">
-              <span class="post-date">📅 Today</span>
-              <span class="ai-model">🤖 Community</span>
-            </div>
-          </div>
-        </div>
-      `;
-      return;
+    // Navigate to the post in the same tab
+    window.location.href = `/view-post.html?id=${postId}&type=${postType}`;
+  }
+});
+
+// Archive Search Functionality with Filters
+async function fetchArchivePosts(query, filters = {}) {
+  try {
+    if (!query.trim()) {
+      return [];
     }
 
-    carouselTrack.innerHTML = archivePosts.map(post => {
-      // Format dates
-      const postDate = new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-      const genDate = post.generation_date ? 
-        new Date(post.generation_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 
-        postDate;
-      
-      // Use anonymous author since we can't safely access user data
-      const authorName = getAuthorName(post.users);
-      
-      // Truncate content for preview (doubled size as requested)
-      const contentPreview = post.content ? 
-        (post.content.length > 300 ? post.content.substring(0, 300) + '...' : post.content) :
-        'Content available via embedded link';
+    // Build query with filters
+    let supabaseQuery = supabase
+      .from('archive_posts')
+      .select('*');
 
-      // Truncate prompt for display
-      const promptPreview = (post.prompt_is_public !== false && post.prompt) ? 
-        (post.prompt.length > 100 ? post.prompt.substring(0, 100) + '...' : post.prompt) :
-        null;
+    // Apply search filter
+    supabaseQuery = supabaseQuery.or(`title.ilike.%${query}%,content.ilike.%${query}%,prompt.ilike.%${query}%,tags.cs.{${query}}`);
 
-      return `
-        <div class="knowledge-card archive-card" data-type="archive" data-post-id="${post.id}">
-          <div class="card-header">
-            <div class="card-author">
-              <span class="author-name">👤 ${authorName}</span>
-            </div>
-            <div class="card-metrics">
-              <span class="view-count">${post.views || 0} views</span>
-              <span class="favorite-count">❤️ ${post.favorite_count || 0}</span>
-            </div>
-          </div>
-          ${promptPreview ? `
-            <div class="card-prompt">
-              <strong>Prompt:</strong> ${promptPreview}
-            </div>
-          ` : ''}
-          <h3>${post.title}</h3>
-          <div class="card-content-preview">
-            ${contentPreview}
-          </div>
-          <div class="card-footer">
-            <div class="card-tags">
-              ${post.tags.slice(0, 2).map(tag => `<span class="tag">${tag}</span>`).join('')}
-              ${post.tags.length > 2 ? `<span class="tag">+${post.tags.length - 2}</span>` : ''}
-            </div>
-            <div class="card-meta">
-              <span class="post-date">📅 ${genDate}</span>
-              <span class="ai-model">🤖 ${post.ai_model}</span>
-            </div>
-          </div>
-        </div>
-      `;
-    }).join('');
+    // Apply AI model filters
+    if (filters.aiModel && filters.aiModel.length > 0) {
+      const modelConditions = filters.aiModel.map(model => {
+        if (model === 'gpt-4') {
+          return 'ai_model.ilike.%gpt-4%,ai_model.ilike.%gpt4%';
+        } else if (model === 'claude') {
+          return 'ai_model.ilike.%claude%';
+        } else if (model === 'gemini') {
+          return 'ai_model.ilike.%gemini%,ai_model.ilike.%bard%';
+        } else if (model === 'other') {
+          return '!ai_model.ilike.%gpt%,!ai_model.ilike.%claude%,!ai_model.ilike.%gemini%,!ai_model.ilike.%bard%';
+        }
+        return `ai_model.ilike.%${model}%`;
+      }).join(',');
+      supabaseQuery = supabaseQuery.or(modelConditions);
+    }
+
+    // Apply content type filter
+    if (filters.contentType === 'text') {
+      supabaseQuery = supabaseQuery.is('embed_url', null);
+    } else if (filters.contentType === 'embedded') {
+      supabaseQuery = supabaseQuery.not('embed_url', 'is', null);
+    }
+
+    // Apply date range filters
+    if (filters.dateFrom) {
+      supabaseQuery = supabaseQuery.gte('created_at', filters.dateFrom);
+    }
+    if (filters.dateTo) {
+      const endDate = new Date(filters.dateTo);
+      endDate.setDate(endDate.getDate() + 1);
+      supabaseQuery = supabaseQuery.lt('created_at', endDate.toISOString().split('T')[0]);
+    }
+
+    // Apply view count filters
+    if (filters.viewsMin) {
+      supabaseQuery = supabaseQuery.gte('views', parseInt(filters.viewsMin));
+    }
+    if (filters.viewsMax) {
+      supabaseQuery = supabaseQuery.lte('views', parseInt(filters.viewsMax));
+    }
+
+    const { data, error } = await supabaseQuery
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    if (error) {
+      console.error('Search error:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Unexpected search error:', error);
+    return [];
+  }
+}
+
+// Collab Search Functionality
+async function fetchCollabPosts(query) {
+  try {
+    if (!query.trim()) {
+      return [];
+    }
+
+    // Search across multiple fields using OR condition
+    const { data, error } = await supabase
+      .from('collab_posts')
+      .select('*')
+      .or(`title.ilike.%${query}%,description.ilike.%${query}%,tags.cs.{${query}}`)
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    if (error) {
+      console.error('Search error:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Unexpected search error:', error);
+    return [];
+  }
+}
+
+function getEmbedUrl(originalUrl) {
+  let embedUrl = originalUrl;
+  
+  // Handle Google Docs URLs
+  if (embedUrl.includes('docs.google.com/document')) {
+    // Extract document ID from the URL
+    const docIdMatch = embedUrl.match(/\/document\/d\/([a-zA-Z0-9-_]+)/);
+    if (docIdMatch) {
+      const docId = docIdMatch[1];
+      // Use the proper embed format for Google Docs
+      embedUrl = `https://docs.google.com/document/d/${docId}/embed`;
+    }
+  }
+  // Handle ChatGPT share URLs
+  else if (embedUrl.includes('chatgpt.com/share/') || embedUrl.includes('chat.openai.com/share/')) {
+    // ChatGPT shares might need special handling
+    embedUrl = originalUrl; // Keep original for now
+  }
+  
+  return embedUrl;
+}
+
+function isGoogleDocsUrl(url) {
+  return url.includes('docs.google.com') || 
+         url.includes('drive.google.com') ||
+         url.includes('sheets.google.com') ||
+         url.includes('slides.google.com');
+}
+
+function displayPosts(posts, query, postType) {
+  const searchResultsHeader = document.querySelector('.search-results-header h2');
+  
+  // Update header based on post type
+  if (postType === 'archive') {
+    searchResultsHeader.textContent = 'Archive Search Results';
+  } else {
+    searchResultsHeader.textContent = 'Collab Search Results';
   }
 
-  // Render collab cards with real data - Updated to not depend on user data
-  function renderCollabCards() {
-    const carouselTrack = document.querySelector('#carousel-track');
+  if (posts.length === 0) {
+    searchResults.innerHTML = `
+      <div class="no-results">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#067273" stroke-width="1">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.35-4.35"/>
+        </svg>
+        <h3>No results found</h3>
+        <p>Try different keywords, adjust your filters, or check your spelling</p>
+      </div>
+    `;
+    return;
+  }
+
+  searchResults.innerHTML = `
+    <div class="search-summary">
+      <p>Found ${posts.length} result${posts.length !== 1 ? 's' : ''} for "${query}"</p>
+    </div>
+    ${posts.map(post => {
+      if (postType === 'archive') {
+        return renderArchivePost(post, query);
+      } else {
+        return renderCollabPost(post, query);
+      }
+    }).join('')}
+  `;
+}
+
+function renderArchivePost(post, query) {
+  let postContent = '';
+  
+  // If there's an embed URL, show it with proper embedding and fallbacks
+  if (post.embed_url) {
+    const embedUrl = getEmbedUrl(post.embed_url);
+    const isGoogleDoc = isGoogleDocsUrl(post.embed_url);
+    const isChatGPT = post.embed_url.includes('chatgpt.com') || post.embed_url.includes('chat.openai.com');
     
-    if (collabPosts.length === 0) {
-      carouselTrack.innerHTML = `
-        <div class="knowledge-card collab-card" data-type="collab">
-          <div class="card-header">
-            <div class="card-author">
-              <span class="author-name">DeepWiki Community</span>
+    postContent = `
+      <div class="post-embed">
+        <div class="embed-header">
+          <div class="embed-type">
+            ${isGoogleDoc ? '📄 Google Document' : isChatGPT ? '🤖 ChatGPT Conversation' : '🔗 External Link'}
+          </div>
+          <a href="${post.embed_url}" target="_blank" rel="noopener noreferrer" class="open-external">
+            Open Original <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+              <polyline points="15,3 21,3 21,9"/>
+              <line x1="10" y1="14" x2="21" y2="3"/>
+            </svg>
+          </a>
+        </div>
+        
+        <div class="embed-container">
+          ${isGoogleDoc ? `
+            <!-- Google Docs cannot be embedded due to security restrictions -->
+            <div class="embed-blocked" style="text-align: center; padding: 60px 20px; background: rgba(6, 114, 115, 0.03); border-radius: 8px; border: 1px solid rgba(6, 114, 115, 0.1);">
+              <div style="color: #067273; margin-bottom: 20px;">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#067273" stroke-width="1">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14,2 14,8 20,8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/>
+                  <line x1="16" y1="17" x2="8" y2="17"/>
+                  <polyline points="10,9 9,9 8,9"/>
+                </svg>
+              </div>
+              <h4 style="color: #067273; margin-bottom: 15px; font-size: 18px; font-weight: 600;">Google Document Available</h4>
+              <p style="color: #666; margin-bottom: 25px; font-size: 15px; line-height: 1.5;">
+                This Google Document cannot be embedded directly due to security restrictions, but you can access the full content by clicking the button below.
+              </p>
+              <a href="${post.embed_url}" target="_blank" rel="noopener noreferrer" 
+                 style="display: inline-flex; align-items: center; gap: 10px; background: #067273; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; transition: all 0.2s ease;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                  <polyline points="15,3 21,3 21,9"/>
+                  <line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+                View Document
+              </a>
             </div>
-            <div class="card-metrics">
-              <span class="view
+          ` : `
+            <!-- Try to embed non-Google content -->
+            <iframe 
+              src="${embedUrl}" 
+              width="100%" 
+              height="500" 
+              frameborder="0"
+              sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+              loading="lazy"
+              onload="this.style.opacity='1'"
+              onerror="this.style.display='none'; this.nextElementSibling.style.display='block'"
+              style="border-radius: 8px; border: 1px solid rgba(6, 114, 115, 0.1); opacity: 0; transition: opacity 0.3s ease;">
+            </iframe>
+            
+            <div class="embed-error" style="display: none; text-align: center; padding: 40px; background: rgba(6, 114, 115, 0.05); border-radius: 8px; border: 1px solid rgba(6, 114, 115, 0.1);">
+              <div style="color: #666; margin-bottom: 15px;">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8" x2="12" y2="12"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+              </div>
+              <h4 style="color: #067273; margin-bottom: 10px;">Preview not available</h4>
+              <p style="color: #666; margin-bottom: 20px; font-size: 14px;">
+                This content cannot be embedded directly due to security restrictions.
+              </p>
+              <a href="${post.embed_url}" target="_blank" rel="noopener noreferrer" 
+                 style="display: inline-flex; align-items: center; gap: 8px; background: #067273; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 500;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                  <polyline points="15,3 21,3 21,9"/>
+                  <line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+                View Original Content
+              </a>
+            </div>
+          `}
+        </div>
+      </div>
+    `;
+  } else {
+    // Show text content with search highlighting
+    let content = post.content;
+    if (query && content.toLowerCase().includes(query.toLowerCase())) {
+      const regex = new RegExp(`(${query})`, 'gi');
+      content = content.replace(regex, '<mark>$1</mark>');
+    }
+    
+    postContent = `
+      <div class="post-content">
+        <div class="content-header">
+          <span class="content-type">📝 Text Content</span>
+        </div>
+        <div class="content-text">
+          <p>${content.length > 400 ? content.substring(0, 400) + '...' : content}</p>
+        </div>
+      </div>
+    `;
+  }
+
+  // Highlight search terms in title and prompt
+  let title = post.title;
+  let prompt = post.prompt;
+  
+  if (query) {
+    const regex = new RegExp(`(${query})`, 'gi');
+    title = title.replace(regex, '<mark>$1</mark>');
+    prompt = prompt.replace(regex, '<mark>$1</mark>');
+  }
+
+  return `
+    <div class="search-post-item">
+      <div class="post-header">
+        <h4>${title}</h4>
+        <div class="post-meta">
+          <span>Posted ${new Date(post.created_at).toLocaleDateString()}</span>
+          <span>•</span>
+          <span>AI Model: ${post.ai_model}</span>
+          ${post.generation_date ? `<span>•</span><span>Generated: ${new Date(post.generation_date).toLocaleDateString()}</span>` : ''}
+        </div>
+      </div>
+      
+      ${postContent}
+      
+      <div class="post-prompt">
+        <strong>Original Prompt:</strong>
+        <p>${prompt.length > 200 ? prompt.substring(0, 200) + '...' : prompt}</p>
+      </div>
+      
+      <div class="post-tags">
+        ${post.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+      </div>
+      
+      <div class="post-actions">
+        <button class="view-full-post-btn" onclick="window.location.href='/view-post.html?id=${post.id}&type=archive'">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M15 3h6v6"/>
+            <path d="M10 14L21 3"/>
+            <path d="M21 9v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h11"/>
+          </svg>
+          View Full Post
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function renderCollabPost(post, query) {
+  // Highlight search terms in title and description
+  let title = post.title;
+  let description = post.description;
+  
+  if (query) {
+    const regex = new RegExp(`(${query})`, 'gi');
+    title = title.replace(regex, '<mark>$1</mark>');
+    description = description.replace(regex, '<mark>$1</mark>');
+  }
+
+  // Format the type for display
+  const typeDisplay = post.type === 'request' ? 'Looking for Collaboration' : 'Offering to Collaborate';
+  const typeIcon = post.type === 'request' ? '🔍' : '🎯';
+
+  return `
+    <div class="search-post-item">
+      <div class="post-header">
+        <h4>${title}</h4>
+        <div class="post-meta">
+          <span>Posted ${new Date(post.created_at).toLocaleDateString()}</span>
+          <span>•</span>
+          <span>${typeIcon} ${typeDisplay}</span>
+        </div>
+      </div>
+      
+      <div class="post-content">
+        <div class="content-header">
+          <span class="content-type">🤝 Collaboration Post</span>
+        </div>
+        <div class="content-text">
+          <p>${description.length > 400 ? description.substring(0, 400) + '...' : description}</p>
+        </div>
+      </div>
+      
+      <div class="post-prompt">
+        <strong>Contact Information:</strong>
+        <p>
+          <a href="mailto:${post.contact_email}" style="color: #067273; text-decoration: none;">
+            📧 ${post.contact_email}
+          </a>
+        </p>
+      </div>
+      
+      <div class="post-tags">
+        ${post.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+      </div>
+      
+      <div class="post-actions">
+        <button class="view-full-post-btn" onclick="window.location.href='/view-post.html?id=${post.id}&type=collab'">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M15 3h6v6"/>
+            <path d="M10 14L21 3"/>
+            <path d="M21 9v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h11"/>
+          </svg>
+          View Full Post
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+async function performSearch() {
+  const query = searchInput.value.trim();
+  
+  if (!query) {
+    searchResults.innerHTML = '<p class="empty-state">Enter a search term to find posts</p>';
+    return;
+  }
+
+  // Show loading state
+  searchLoading.style.display = 'block';
+  searchResults.style.display = 'none';
+  archiveResultsContainer.classList.add('active');
+
+  try {
+    // Update filters from current form state
+    updateCurrentFilters();
+
+    let posts;
+    if (currentCarouselType === 'archive') {
+      posts = await fetchArchivePosts(query, currentFilters);
+    } else {
+      posts = await fetchCollabPosts(query);
+    }
+    
+    displayPosts(posts, query, currentCarouselType);
+  } catch (error) {
+    searchResults.innerHTML = '<p class="error-state">An error occurred while searching. Please try again.</p>';
+  } finally {
+    searchLoading.style.display = 'none';
+    searchResults.style.display = 'block';
+  }
+}
+
+// Search event listeners
+searchButton.addEventListener('click', performSearch);
+
+searchInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    performSearch();
+  }
+});
+
+// Browse button functionality - Updated to use new browse pages
+browseButton.addEventListener('click', () => {
+  if (currentCarouselType === 'archive') {
+    window.location.href = '/browse-archive.html';
+  } else {
+    window.location.href = '/browse-collab.html';
+  }
+});
+
+// Close search results
+closeSearchBtn.addEventListener('click', () => {
+  archiveResultsContainer.classList.remove('active');
+  searchInput.value = '';
+  searchResults.innerHTML = '<p class="empty-state">Enter a search term to find posts</p>';
+});
+
+// Handle nav item clicks
+navItems.forEach(item => {
+  item.addEventListener('click', (e) => {
+    // Remove active class from all nav items
+    navItems.forEach(nav => nav.classList.remove('active'));
+    // Add active class to clicked item
+    item.classList.add('active');
+    
+    const isCollab = item.classList.contains('collab-nav');
+    const isArchives = item.classList.contains('archives-nav');
+    
+    if (isCollab) {
+      searchInput.placeholder = 'Search DeepWiki.io Vibe Coder Collab';
+      browseButton.textContent = 'Browse Collab';
+      currentCarouselType = 'collab';
+    } else if (isArchives) {
+      searchInput.placeholder = 'Search DeepWiki.io Open AI Archives';
+      browseButton.textContent = 'Browse Archive';
+      currentCarouselType = 'archive';
+    }
+    
+    updateCarouselContent();
+  });
+});
+
+document.addEventListener('click', (e) => {
+  if (!menuHeader.contains(e.target)) {
+    const dropdowns = document.getElementsByClassName('archives-content');
+    for (const dropdown of dropdowns) {
+      if (dropdown.classList.contains('show')) {
+        dropdown.classList.remove('show');
+      }
+    }
+  }
+});
+
+// Animation variables and logic
+let startTime = null;
+const animationDuration = 3000;
+const slideInDuration = 1100;
+
+function animate(currentTime) {
+  if (!startTime) startTime = currentTime;
+  const elapsed = currentTime - startTime;
+  const progress = Math.min(elapsed / animationDuration, 1);
+
+  if (elapsed < slideInDuration) {
+    middleImage.style.opacity = 0;
+    menuHeader.style.opacity = 0;
+    topCenterImage.style.opacity = 0;
+    searchContainer.style.opacity = 0;
+    knowledgeCarousel.style.opacity = 0;
+    carouselNavigationContainer.style.opacity = 0;
+    footer.style.opacity = 0;
+    if (boltBadge) boltBadge.style.opacity = 0;
+  } 
+  else if (progress <= 0.8) {
+    const rotationProgress = (elapsed - slideInDuration) / (animationDuration * 0.8 - slideInDuration);
+    const rotationSpeed = rotationProgress * 1440;
+    const scale = 1 - (rotationProgress * 0.75);
+    const moveY = -rotationProgress * 100;
+
+    middleImage.style.opacity = 1;
+    middleImage.style.transform = `translate(-50%, calc(-50% + ${moveY}vh)) rotate(${rotationSpeed}deg) scale(${scale})`;
+    menuHeader.style.opacity = 0;
+    topCenterImage.style.opacity = 0;
+    searchContainer.style.opacity = 0;
+    knowledgeCarousel.style.opacity = 0;
+    carouselNavigationContainer.style.opacity = 0;
+    footer.style.opacity = 0;
+    if (boltBadge) boltBadge.style.opacity = 0;
+  } else {
+    middleImage.style.opacity = 0;
+    menuHeader.style.opacity = 1;
+    topCenterImage.style.opacity = 1;
+    
+    if (progress > 0.9) {
+      searchContainer.style.opacity = 1;
+      searchContainer.classList.add('visible');
+      knowledgeCarousel.style.opacity = 1;
+      knowledgeCarousel.classList.add('visible');
+      carouselNavigationContainer.style.opacity = 1;
+      carouselNavigationContainer.classList.add('visible');
+      
+      if (progress > 0.95) {
+        footer.style.opacity = 1;
+        footer.classList.add('visible');
+        
+        if (boltBadge) {
+          boltBadge.style.opacity = 1;
+        }
+      }
+    }
+  }
+
+  if (progress < 1) {
+    requestAnimationFrame(animate);
+  }
+  
+  menuHeader.classList.add('visible');
+}
+
+// Initialize carousel and start animation
+initializeCarousel();
+requestAnimationFrame(animate);
+
+// Set initial page state
+if (isCollabPage) {
+  document.querySelector('.collab-nav').classList.add('active');
+  searchInput.placeholder = 'Search DeepWiki.io Vibe Coder Collab';
+  browseButton.textContent = 'Browse Collab';
+  currentCarouselType = 'collab';
+  updateCarouselContent();
+} else {
+  document.querySelector('.archives-nav').classList.add('active');
+}
