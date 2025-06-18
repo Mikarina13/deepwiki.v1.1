@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const profileDob = document.getElementById('profile-dob');
     
     profileEmail.textContent = session.user.email;
-    profileName.textContent = getDisplayName(session.user);
+    profileName.textContent = session.user.user_metadata?.display_name || 'Anonymous User';
 
     // Handle Google profile picture automatically
     if (session.user.user_metadata?.avatar_url) {
@@ -77,37 +77,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.location.href = '/login.html';
   }
 });
-
-// Helper function to get display name with better fallback logic
-function getDisplayName(user) {
-  if (!user) return 'Anonymous User';
-  
-  // Try display_name first (user-set name)
-  if (user.user_metadata?.display_name) {
-    return user.user_metadata.display_name;
-  }
-  
-  // Try full_name (from OAuth providers like Google)
-  if (user.user_metadata?.full_name) {
-    return user.user_metadata.full_name;
-  }
-  
-  // Try name (alternative OAuth field)
-  if (user.user_metadata?.name) {
-    return user.user_metadata.name;
-  }
-  
-  // Fall back to email username (part before @)
-  if (user.email) {
-    const emailUsername = user.email.split('@')[0];
-    // Capitalize first letter and replace dots/underscores with spaces
-    return emailUsername
-      .replace(/[._]/g, ' ')
-      .replace(/\b\w/g, l => l.toUpperCase());
-  }
-  
-  return 'Anonymous User';
-}
 
 async function loadUserPosts() {
   try {
