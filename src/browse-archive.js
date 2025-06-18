@@ -255,10 +255,7 @@ async function displayPosts(posts) {
 
 async function createPostCard(post) {
   // Get author name
-  const authorName = post.users?.raw_user_meta_data?.display_name || 
-                    post.users?.raw_user_meta_data?.full_name || 
-                    post.users?.email?.split('@')[0] || 
-                    'Anonymous';
+  const authorName = getAuthorName(post.users);
   
   // Format date
   const postDate = new Date(post.created_at).toLocaleDateString('en-US', { 
@@ -361,6 +358,33 @@ async function createPostCard(post) {
   });
   
   return card;
+}
+
+// Helper function to get author name
+function getAuthorName(users) {
+  if (!users) return 'Anonymous';
+  
+  // Try display_name first (from settings/profile)
+  if (users.raw_user_meta_data?.display_name) {
+    return users.raw_user_meta_data.display_name;
+  }
+  
+  // Try full_name (from OAuth providers like Google)
+  if (users.raw_user_meta_data?.full_name) {
+    return users.raw_user_meta_data.full_name;
+  }
+  
+  // Try name (alternative OAuth field)
+  if (users.raw_user_meta_data?.name) {
+    return users.raw_user_meta_data.name;
+  }
+  
+  // Fall back to email username part
+  if (users.email) {
+    return users.email.split('@')[0];
+  }
+  
+  return 'Anonymous User';
 }
 
 async function incrementViewCount(postId) {
