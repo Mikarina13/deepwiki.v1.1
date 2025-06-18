@@ -420,10 +420,16 @@ function updateCurrentFilters() {
 // Load real posts from database - Fixed to handle RLS policies properly
 async function loadCarouselData() {
   try {
-    // Load archive posts without joining users table to avoid RLS issues
+    // Load archive posts with public user info
     const { data: archiveData, error: archiveError } = await supabase
       .from('archive_posts')
-      .select('*')
+      .select(`
+        *,
+        users:user_id (
+          email,
+          raw_user_meta_data
+        )
+      `)
       .order('created_at', { ascending: false })
       .limit(10);
 
@@ -432,10 +438,16 @@ async function loadCarouselData() {
       throw archiveError;
     }
 
-    // Load collab posts without joining users table to avoid RLS issues
+    // Load collab posts with public user info
     const { data: collabData, error: collabError } = await supabase
       .from('collab_posts')
-      .select('*')
+      .select(`
+        *,
+        users:user_id (
+          email,
+          raw_user_meta_data
+        )
+      `)
       .order('created_at', { ascending: false });
 
     if (collabError) {
