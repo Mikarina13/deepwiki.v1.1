@@ -3,7 +3,6 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data: https://i.imgur.com; connect-src 'self' https://brisxbmbsdomvfkxrwbf.supabase.co; font-src 'self' https://cdnjs.cloudflare.com;">
     <title>Contact Us - DeepWiki.io</title>
     <link rel="stylesheet" href="/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -14,6 +13,118 @@
         initMenu();
       });
     </script>
+    <style>
+      .contact-container {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        max-width: 600px;
+        width: 95%;
+        max-height: 90vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        z-index: 1100;
+        box-shadow: 
+          0 0 15px rgba(6, 114, 115, 0.35),
+          0 0 30px rgba(6, 114, 115, 0.25),
+          0 0 45px rgba(6, 114, 115, 0.15),
+          0 0 60px rgba(6, 114, 115, 0.1);
+        animation: formGlow 2s ease-in-out infinite alternate;
+      }
+      
+      .contact-header {
+        background-color: #07717c;
+        color: white;
+        padding: 15px 0;
+        text-align: center;
+        width: calc(100% + 60px);
+        margin: -30px -30px 25px -30px;
+        border-radius: 12px 12px 0 0;
+        position: relative;
+        left: 0;
+        right: 0;
+      }
+      
+      .contact-header h1 {
+        color: white;
+        margin: 0;
+        font-size: 28px;
+      }
+      
+      .form-group {
+        margin-bottom: 20px;
+      }
+      
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #07717c;
+        font-weight: 500;
+      }
+      
+      .form-group input, 
+      .form-group textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid rgba(6, 114, 115, 0.2);
+        border-radius: 6px;
+        font-size: 16px;
+        transition: all 0.2s ease;
+      }
+      
+      .form-group input:focus, 
+      .form-group textarea:focus {
+        outline: none;
+        border-color: #07717c;
+        box-shadow: 0 0 0 2px rgba(6, 114, 115, 0.1);
+      }
+      
+      .send-message-btn {
+        width: 100%;
+        padding: 14px;
+        background: #fac637;
+        color: #07717c;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      
+      .send-message-btn:hover {
+        background: #f8c832;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+      
+      .company-info {
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 1px solid rgba(7, 113, 124, 0.1);
+      }
+      
+      .company-info h2 {
+        color: #07717c;
+        margin-bottom: 20px;
+      }
+      
+      .info-item {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 15px;
+      }
+      
+      .info-item i {
+        color: #fac637;
+        margin-right: 15px;
+        margin-top: 5px;
+      }
+    </style>
   </head>
   <body>
     <div class="menu-header">

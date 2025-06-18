@@ -3,10 +3,66 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data: https://i.imgur.com; connect-src 'self' https://brisxbmbsdomvfkxrwbf.supabase.co; font-src 'self' https://cdnjs.cloudflare.com;">
     <title>Activity - DeepWiki.io</title>
     <link rel="stylesheet" href="/style.css">
     <script type="module" src="/src/activity.js"></script>
+    <style>
+      .activity-container {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        max-width: 800px;
+        width: 95%;
+        max-height: 90vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        z-index: 1100;
+        box-shadow: 
+          0 0 15px rgba(6, 114, 115, 0.35),
+          0 0 30px rgba(6, 114, 115, 0.25),
+          0 0 45px rgba(6, 114, 115, 0.15),
+          0 0 60px rgba(6, 114, 115, 0.1);
+        animation: formGlow 2s ease-in-out infinite alternate;
+      }
+      
+      .activity-header-title {
+        background-color: #07717c;
+        color: white;
+        padding: 15px 0;
+        text-align: center;
+        width: calc(100% + 60px);
+        margin: -30px -30px 25px -30px;
+        border-radius: 12px 12px 0 0;
+        position: relative;
+        left: 0;
+        right: 0;
+      }
+      
+      .activity-header-title h1 {
+        color: white;
+        margin: 0;
+        font-size: 28px;
+      }
+      
+      .activity-filters {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 30px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      
+      .empty-state {
+        color: #7a7a7a;
+        font-style: italic;
+        text-align: center;
+        padding: 20px 0;
+      }
+    </style>
   </head>
   <body>
     <div class="menu-header">
