@@ -34,6 +34,13 @@ document.querySelector('#app').innerHTML = `
             </svg>
             Publish
           </a>
+          <a href="/index.html" class="nav-item archives-nav">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4v16a2 2 0 002 2h12a2 2 0 002-2V8.342a2 2 0 00-.602-1.43l-4.44-4.342A2 2 0 0013.56 2H6a2 2 0 00-2 2z"/>
+              <path d="M14 2v4a2 2 0 002 2h4"/>
+            </svg>
+            ARCHIVES
+          </a>
           <a href="/collab.html" class="nav-item collab-nav">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
@@ -42,13 +49,6 @@ document.querySelector('#app').innerHTML = `
               <path d="M16 3.13a4 4 0 010 7.75"/>
             </svg>
             COLLAB
-          </a>
-          <a href="/index.html" class="nav-item archives-nav">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 4v16a2 2 0 002 2h12a2 2 0 002-2V8.342a2 2 0 00-.602-1.43l-4.44-4.342A2 2 0 0013.56 2H6a2 2 0 00-2 2z"/>
-              <path d="M14 2v4a2 2 0 002 2h4"/>
-            </svg>
-            ARCHIVES
           </a>
         </div>
       </div>
@@ -129,6 +129,12 @@ document.querySelector('#app').innerHTML = `
           Help
         </a>
       </div>
+    </div>
+    <div class="left-edge-trigger"></div>
+    <div class="menu-hamburger-indicator">
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
     </div>
     <img 
       src="https://i.imgur.com/MQYLMSS.png" 
@@ -278,7 +284,6 @@ const topCenterImage = document.querySelector('.top-center-image');
 const searchContainer = document.querySelector('.search-container');
 const knowledgeCarousel = document.querySelector('.knowledge-carousel-container');
 const carouselNavigationContainer = document.querySelector('.carousel-navigation-container');
-const footer = document.querySelector('.footer');
 
 // Search elements
 const searchInput = document.querySelector('#search-input');
@@ -316,15 +321,20 @@ const nextBtn = document.querySelector('#next-btn');
 // Use the central menu initialization function
 initMenu();
 
-// Update the footer links
-document.querySelector('.footer-links').innerHTML = `
-  <a href="/info-hub.html">Contributor Guidelines</a>
-  <a href="/info-hub.html#terms">Terms</a>
-  <a href="/info-hub.html#privacy-policy">Privacy Policy</a>
-  <a href="/info-hub.html#copyright-notice">Copyright Notice</a>
-  <a href="/contact.html">Contact Us</a>
-  <a href="/support.html">Support DeepWiki.io</a>
-`;
+// Update the footer links when footer is available
+setTimeout(() => {
+  const footerLinks = document.querySelector('.footer-links');
+  if (footerLinks) {
+    footerLinks.innerHTML = `
+      <a href="/info-hub.html">Contributor Guidelines</a>
+      <a href="/info-hub.html#terms">Terms</a>
+      <a href="/info-hub.html#privacy-policy">Privacy Policy</a>
+      <a href="/info-hub.html#copyright-notice">Copyright Notice</a>
+      <a href="/contact.html">Contact Us</a>
+      <a href="/support.html">Support DeepWiki.io</a>
+    `;
+  }
+}, 100);
 
 // Add Bolt badge only on archive or collab pages - initially hidden
 const pathname = window.location.pathname;
@@ -559,14 +569,8 @@ function renderArchiveCards() {
       new Date(post.generation_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 
       postDate;
     
-    // Format author name with capitalization and spacing
-    const authorName = post.users?.raw_user_meta_data?.display_name || 
-                      post.users?.raw_user_meta_data?.full_name || 
-                      (post.users?.email ? 
-                        post.users.email.split('@')[0]
-                          .replace(/[._]/g, ' ')
-                          .replace(/\b\w/g, l => l.toUpperCase()) 
-                        : 'Anonymous User');
+    // Use a simple author name since we don't have user data
+    const authorName = 'Community Member';
     
     // Truncate content for preview (doubled size as requested)
     const contentPreview = post.content ? 
@@ -651,14 +655,8 @@ function renderCollabCards() {
     // Format dates
     const postDate = new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     
-    // Format author name with capitalization and spacing
-    const authorName = post.users?.raw_user_meta_data?.display_name || 
-                      post.users?.raw_user_meta_data?.full_name || 
-                      (post.users?.email ? 
-                        post.users.email.split('@')[0]
-                          .replace(/[._]/g, ' ')
-                          .replace(/\b\w/g, l => l.toUpperCase()) 
-                        : 'Anonymous User');
+    // Use a simple author name since we don't have user data
+    const authorName = 'Community Member';
     
     // Truncate description for preview
     const descriptionPreview = post.description ? 
