@@ -645,4 +645,208 @@ function renderCollabCards() {
 
   carouselTrack.innerHTML = collabPosts.map(post => {
     // Format date
-    const postDate = new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day:
+    const postDate = new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    
+    // Use anonymous author since we can't safely access user data
+    const authorName = post.users?.raw_user_meta_data?.display_name || 
+                      post.users?.raw_user_meta_data?.full_name || 
+                      (post.users?.email ? post.users.email.split('@')[0] : 'Anonymous');
+    
+    // Truncate description for preview
+    const descriptionPreview = post.description ? 
+      (post.description.length > 200 ? post.description.substring(0, 200) + '...' : post.description) :
+      'No description available';
+
+    return `
+      <div class="knowledge-card collab-card" data-type="collab" data-post-id="${post.id}">
+        <div class="card-header">
+          <div class="card-author">
+            <span class="author-name">👤 ${authorName}</span>
+          </div>
+          <div class="card-metrics">
+            <span class="view-count">${post.views || 0} views</span>
+            <span class="favorite-count">❤️ ${post.favorite_count || 0}</span>
+          </div>
+        </div>
+        <h3>${post.title}</h3>
+        <div class="card-content-preview">
+          ${descriptionPreview}
+        </div>
+        <div class="card-footer">
+          <div class="card-tags">
+            ${post.tags.slice(0, 2).map(tag => `<span class="tag">${tag}</span>`).join('')}
+            ${post.tags.length > 2 ? `<span class="tag">+${post.tags.length - 2}</span>` : ''}
+          </div>
+          <div class="card-meta">
+            <span class="post-date">📅 ${postDate}</span>
+            <span class="collab-type">🤝 ${post.type}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// Get visible cards
+function getVisibleCards() {
+  return document.querySelectorAll('.knowledge-card');
+}
+
+// Update carousel position
+function updateCarouselPosition() {
+  const cards = getVisibleCards();
+  if (cards.length === 0) return;
+
+  cards.forEach((card, index) => {
+    card.classList.remove('active', 'prev', 'next');
+    
+    if (index === currentSlide) {
+      card.classList.add('active');
+    } else if (index === currentSlide - 1) {
+      card.classList.add('prev');
+    } else if (index === currentSlide + 1) {
+      card.classList.add('next');
+    }
+  });
+}
+
+// Carousel navigation
+prevBtn.addEventListener('click', () => {
+  const cards = getVisibleCards();
+  if (cards.length === 0) return;
+  
+  currentSlide = currentSlide > 0 ? currentSlide - 1 : cards.length - 1;
+  updateCarouselPosition();
+});
+
+nextBtn.addEventListener('click', () => {
+  const cards = getVisibleCards();
+  if (cards.length === 0) return;
+  
+  currentSlide = currentSlide < cards.length - 1 ? currentSlide + 1 : 0;
+  updateCarouselPosition();
+});
+
+// Search functionality
+async function performSearch() {
+  const query = searchInput.value.trim();
+  if (!query) return;
+
+  searchLoading.style.display = 'block';
+  searchResults.innerHTML = '';
+  archiveResultsContainer.style.display = 'block';
+
+  try {
+    let searchQuery = supabase
+      .from('archive_posts')
+      .select('*')
+      .or(`title.ilike.%${query}%, content.ilike.%${query}%, tags.cs.{${query}}`);
+
+    // Apply filters
+    if (currentFilters.aiModel.length > 0) {
+      const aiModelFilter = currentFilters.aiModel.map(model => {
+        if (model === 'gpt-4') return 'ai_model.ilike.%gpt-4%';
+        if (model === 'claude') return 'ai_model.ilike.%claude%';
+        if (model === 'gemini') return 'ai_model.ilike.%gemini%,ai_model.ilike.%bard%';
+        return `ai_model.ilike.%${model}%`;
+      }).join(',');
+      searchQuery = searchQuery.or(aiModelFilter);
+    }
+
+    if (currentFilters.contentType === 'text') {
+      searchQuery = searchQuery.is('embed_url', null);
+    } else if (currentFilters.contentType === 'embedded') {
+      searchQuery = searchQuery.not('embed_url', 'is', null);
+    }
+
+    if (currentFilters.dateFrom) {
+      searchQuery = searchQuery.gte('generation_date', currentFilters.dateFrom);
+    }
+    if (currentFilters.dateTo) {
+      searchQuery = searchQuery.lte('generation_date', currentFilters.dateTo);
+    }
+
+    if (currentFilters.viewsMin) {
+      searchQuery = searchQuery.gte('views', parseInt(currentFilters.viewsMin));
+    }
+    if (currentFilters.viewsMax) {
+      searchQuery = searchQuery.lte('views', parseInt(currentFilters.viewsMax));
+    }
+
+    const { data, error } = await searchQuery.order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    displaySearchResults(data || []);
+  } catch (error) {
+    console.error('Search error:', error);
+    searchResults.innerHTML = '<p class="error">Search failed. Please try again.</p>';
+  } finally {
+    searchLoading.style.display = 'none';
+  }
+}
+
+// Display search results
+function displaySearchResults(posts) {
+  if (posts.length === 0) {
+    searchResults.innerHTML = '<p class="empty-state">No posts found matching your search.</p>';
+    return;
+  }
+
+  searchResults.innerHTML = posts.map(post => {
+    const postDate = new Date(post.created_at).toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+    
+    const contentPreview = post.content ? 
+      (post.content.length > 200 ? post.content.substring(0, 200) + '...' : post.content) :
+      'Content available via embedded link';
+
+    return `
+      <div class="search-result-item" data-post-id="${post.id}">
+        <div class="result-header">
+          <h3>${post.title}</h3>
+          <div class="result-metrics">
+            <span class="view-count">${post.views || 0} views</span>
+          </div>
+        </div>
+        <div class="result-content">
+          ${contentPreview}
+        </div>
+        <div class="result-footer">
+          <div class="result-tags">
+            ${post.tags.slice(0, 3).map(tag => `<span class="tag">${tag}</span>`).join('')}
+          </div>
+          <div class="result-meta">
+            <span class="post-date">📅 ${postDate}</span>
+            <span class="ai-model">🤖 ${post.ai_model}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// Event listeners
+searchButton.addEventListener('click', performSearch);
+searchInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    performSearch();
+  }
+});
+
+closeSearchBtn.addEventListener('click', () => {
+  archiveResultsContainer.style.display = 'none';
+  searchInput.value = '';
+});
+
+browseButton.addEventListener('click', () => {
+  window.location.href = '/browse-archive.html';
+});
+
+// Initialize carousel on page load
+document.addEventListener('DOMContentLoaded', () => {
+  initializeCarousel();
+});
