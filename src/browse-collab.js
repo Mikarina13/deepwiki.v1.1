@@ -250,10 +250,7 @@ async function displayPosts(posts) {
 
 async function createPostCard(post) {
   // Get author name
-  const authorName = post.users?.raw_user_meta_data?.display_name || 
-                    post.users?.raw_user_meta_data?.full_name || 
-                    post.users?.email?.split('@')[0] || 
-                    'Anonymous';
+  const authorName = getAuthorName(post.users);
   
   // Format date
   const postDate = new Date(post.created_at).toLocaleDateString('en-US', { 
@@ -304,7 +301,7 @@ async function createPostCard(post) {
     <h3 class="post-card-title">${post.title}</h3>
     
     <div class="post-card-meta">
-      <span>👤 ${authorName}</span>
+      <span>👤 By ${authorName}</span>
       <span>•</span>
       <span>${typeIcon} ${typeDisplay}</span>
       <span>•</span>
@@ -365,6 +362,37 @@ async function createPostCard(post) {
   });
   
   return card;
+}
+
+// Helper function to get author name with fallback logic
+function getAuthorName(user) {
+  if (!user) return 'Anonymous User';
+  
+  // Try display_name first (user-set name)
+  if (user.raw_user_meta_data?.display_name) {
+    return user.raw_user_meta_data.display_name;
+  }
+  
+  // Try full_name (from OAuth providers like Google)
+  if (user.raw_user_meta_data?.full_name) {
+    return user.raw_user_meta_data.full_name;
+  }
+  
+  // Try name (alternative OAuth field)
+  if (user.raw_user_meta_data?.name) {
+    return user.raw_user_meta_data.name;
+  }
+  
+  // Fall back to email username (part before @)
+  if (user.email) {
+    const emailUsername = user.email.split('@')[0];
+    // Capitalize first letter and replace dots/underscores with spaces
+    return emailUsername
+      .replace(/[._]/g, ' ')
+      .replace(/\b\w/g, l => l.toUpperCase());
+  }
+  
+  return 'Anonymous User';
 }
 
 async function incrementViewCount(postId) {
