@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { initMenu } from './src/utils/menu';
+import { initMenu } from './src/utils/menu.js';
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
