@@ -86,36 +86,21 @@
       .favorite-btn {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        padding: 12px 20px;
-        background: white;
+        justify-content: center;
+        padding: 4px;
+        background: none;
+        border: none;
         color: #666;
-        border: 2px solid rgba(6, 114, 115, 0.2);
-        border-radius: 8px;
-        font-size: 14px;
-        font-weight: 500;
         cursor: pointer;
-        transition: all 0.2s ease;
-        text-decoration: none;
-        white-space: nowrap;
-        flex-shrink: 0;
+        transition: color 0.2s ease;
       }
-      
+
       .favorite-btn:hover {
-        background: rgba(6, 114, 115, 0.05);
-        border-color: rgba(6, 114, 115, 0.3);
         color: #067273;
       }
-      
+
       .favorite-btn.favorited {
-        background: rgba(220, 53, 69, 0.1);
         color: #dc3545;
-        border-color: rgba(220, 53, 69, 0.3);
-      }
-      
-      .favorite-btn.favorited:hover {
-        background: rgba(220, 53, 69, 0.15);
-        border-color: rgba(220, 53, 69, 0.4);
       }
       
       .favorite-btn svg {
