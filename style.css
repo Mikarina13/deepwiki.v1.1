@@ -510,6 +510,33 @@ body {
   margin-bottom: 10px;
 }
 
+.recently-viewed {
+  padding: 20px;
+  margin-top: 10px;
+}
+
+.recently-viewed h3 {
+  color: #07717c;
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.recent-item {
+  display: block;
+  color: #07717c;
+  text-decoration: none;
+  opacity: 0.8;
+  font-size: 14px;
+  padding: 6px 0;
+  transition: opacity 0.2s ease;
+}
+
+.recent-item:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
 .empty-state {
   color: #07717c;
   opacity: 0.7;

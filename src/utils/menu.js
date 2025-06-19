@@ -30,6 +30,7 @@ export async function initMenu() {
   function openMenu() {
     menuOptions.classList.add('active');
     menuOverlay.classList.add('active');
+    renderRecentlyViewed();
   }
 
   function closeMenu() {
@@ -91,7 +92,7 @@ export async function initMenu() {
       menuOptions.insertBefore(menuTop, existingChildren[0]);
     } else {
       menuOptions.appendChild(menuTop);
-      
+
       // Add recent searches section if it doesn't exist and this isn't the info-hub page
       if (!document.querySelector('.info-nav')) {
         const recentSearches = document.createElement('div');
@@ -107,6 +108,22 @@ export async function initMenu() {
           </button>
         `;
         menuOptions.appendChild(recentSearches);
+      }
+    }
+
+    // Insert recently viewed section
+    if (!menuOptions.querySelector('.recently-viewed')) {
+      const recentlyViewed = document.createElement('div');
+      recentlyViewed.className = 'recently-viewed';
+      recentlyViewed.innerHTML = `
+        <h3>Recently Viewed</h3>
+        <div class="recently-viewed-list"></div>
+      `;
+      const infoNav = menuOptions.querySelector('.info-nav');
+      if (infoNav) {
+        menuOptions.insertBefore(recentlyViewed, infoNav.nextSibling);
+      } else {
+        menuOptions.appendChild(recentlyViewed);
       }
     }
     
@@ -254,5 +271,29 @@ export async function initMenu() {
     if (e.relatedTarget !== leftEdgeTrigger && e.relatedTarget !== hamburgerIcon && !isMenuLockedOpen) {
       closeMenu();
     }
+  });
+}
+
+function renderRecentlyViewed() {
+  const listContainer = menuOptions.querySelector('.recently-viewed-list');
+  if (!listContainer) return;
+
+  const items = JSON.parse(localStorage.getItem('recentlyViewedPosts') || '[]');
+  listContainer.innerHTML = '';
+
+  if (items.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'empty-state';
+    empty.textContent = 'Empty';
+    listContainer.appendChild(empty);
+    return;
+  }
+
+  items.forEach((item) => {
+    const link = document.createElement('a');
+    link.href = `/view-post.html?id=${item.id}&type=${item.type}`;
+    link.textContent = item.title;
+    link.className = 'recent-item';
+    listContainer.appendChild(link);
   });
 }

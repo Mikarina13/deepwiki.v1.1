@@ -184,8 +184,10 @@ async function loadAndDisplayPost(postId, postType, container) {
     if (!post) {
       throw new Error('Post not found');
     }
-    
+
     currentPost = post;
+
+    addRecentlyViewed(post.id, postType, post.title);
     
     // Increment view count
     await incrementViewCount(postId, postType);
@@ -715,4 +717,18 @@ function showError(message) {
       </a>
     </div>
   `;
+}
+
+function addRecentlyViewed(id, type, title) {
+  const key = 'recentlyViewedPosts';
+  const maxItems = 5;
+  let items = [];
+  try {
+    items = JSON.parse(localStorage.getItem(key)) || [];
+  } catch (e) {}
+
+  items = items.filter(p => !(p.id === id && p.type === type));
+  items.unshift({ id, type, title });
+  if (items.length > maxItems) items = items.slice(0, maxItems);
+  localStorage.setItem(key, JSON.stringify(items));
 }
