@@ -314,6 +314,7 @@ async function createPostCard(post) {
       <span>👁️ ${post.views || 0} views</span>
       <span>•</span>
       <span>❤️ ${post.favorite_count || 0}</span>
+      <span>⬇️ ${post.downloads || 0}</span>
     </div>
     
     <div class="post-card-content">

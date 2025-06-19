@@ -228,6 +228,26 @@ async function incrementViewCount(postId, postType) {
   }
 }
 
+async function incrementDownloadCount(postId) {
+  try {
+    const { data: currentPost, error: selectError } = await supabase
+      .from('archive_posts')
+      .select('downloads')
+      .eq('id', postId)
+      .single();
+
+    if (!selectError) {
+      const newCount = (currentPost.downloads || 0) + 1;
+      await supabase
+        .from('archive_posts')
+        .update({ downloads: newCount })
+        .eq('id', postId);
+    }
+  } catch (error) {
+    console.error('Error updating download count:', error);
+  }
+}
+
 async function displayArchivePost(post, container) {
   // Check if prompt should be displayed (backward compatibility: if prompt_is_public is null, default to true)
   const showPrompt = post.prompt_is_public !== false;
@@ -274,6 +294,7 @@ async function displayArchivePost(post, container) {
   }
   
   const favoriteButton = createFavoriteButton(post.id, 'archive', isFaved);
+  const downloadButton = `<a class="download-btn" data-post-id="${post.id}" download>\n        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">\n          <path d="M12 5v14"/>\n          <polyline points="19 12 12 19 5 12"/>\n        </svg>\n        <span>Download</span>\n      </a>`;
 
   const postHtml = `
     <div class="post-full-content">
@@ -281,6 +302,7 @@ async function displayArchivePost(post, container) {
         <div class="post-header-actions">
           <h1 class="post-full-title">${post.title}</h1>
           ${favoriteButton}
+          ${downloadButton}
         </div>
         <div class="post-full-meta">
           <span class="post-type-badge">
@@ -293,6 +315,7 @@ async function displayArchivePost(post, container) {
           <span>🤖 AI Model: ${post.ai_model}</span>
           ${post.generation_date ? `<span>⚡ Generated: ${new Date(post.generation_date).toLocaleDateString()}</span>` : ''}
           <span>👁️ ${post.views || 0} views</span>
+          <span>⬇️ ${post.downloads || 0}</span>
         </div>
       </div>
 
@@ -316,9 +339,10 @@ async function displayArchivePost(post, container) {
   `;
   
   container.innerHTML = postHtml;
-  
+
   // Add event listener for favorite button
   setupFavoriteButton(post);
+  setupDownloadButton(post, showPrompt);
 }
 
 async function displayCollabPost(post, container) {
@@ -500,6 +524,26 @@ function setupFavoriteButton(post) {
       console.error('Error managing favorite:', error);
       showNotification(error.message, 'error');
     }
+  });
+}
+
+function setupDownloadButton(post, showPrompt) {
+  const downloadBtn = document.querySelector('.download-btn');
+  if (!downloadBtn) return;
+
+  let fileContent = `${post.title}\n\n`;
+  if (showPrompt) {
+    fileContent += `Prompt:\n${post.prompt}\n\n`;
+  }
+  fileContent += post.content || '';
+  const blob = new Blob([fileContent], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  downloadBtn.href = url;
+  downloadBtn.download = `${post.title.replace(/\s+/g, '_')}.txt`;
+
+  downloadBtn.addEventListener('click', async () => {
+    await incrementDownloadCount(post.id);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   });
 }
 
