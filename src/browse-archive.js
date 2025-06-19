@@ -1,11 +1,7 @@
-import { createClient } from '@supabase/supabase-js';
+import supabase from './utils/supabaseClient.js';
 import { initMenu } from './utils/menu.js';
 import { escapeHtml, ensureHttps } from './utils/sanitize.js';
 
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
 
 let currentUser = null;
 let currentPage = 1;
