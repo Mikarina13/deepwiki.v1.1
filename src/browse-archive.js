@@ -568,7 +568,13 @@ async function handleDownloadClick(button) {
     // Get post data for download
     const { data: post } = await supabase
       .from('archive_posts')
-      .select('*')
+      .select(`
+        *,
+        users:user_id (
+          email,
+          raw_user_meta_data
+        )
+      `)
       .eq('id', postId)
       .single();
 function updateFavoriteButton(button, isFaved) {

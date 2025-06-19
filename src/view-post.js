@@ -163,7 +163,13 @@ async function loadAndDisplayPost(postId, postType, container) {
     if (postType === 'archive') {
       const { data, error } = await supabase
         .from('archive_posts')
-        .select('*')
+        .select(`
+          *,
+          users:user_id (
+            email,
+            raw_user_meta_data
+          )
+        `)
         .eq('id', postId)
         .single();
       
@@ -172,7 +178,13 @@ async function loadAndDisplayPost(postId, postType, container) {
     } else if (postType === 'collab') {
       const { data, error } = await supabase
         .from('collab_posts')
-        .select('*')
+        .select(`
+          *,
+          users:user_id (
+            email,
+            raw_user_meta_data
+          )
+        `)
         .eq('id', postId)
         .single();
       
@@ -232,6 +244,12 @@ async function incrementViewCount(postId, postType) {
 async function displayArchivePost(post, container) {
   // Check if prompt should be displayed (backward compatibility: if prompt_is_public is null, default to true)
   const showPrompt = post.prompt_is_public !== false;
+  
+  // Get author name
+  const authorName = post.users?.raw_user_meta_data?.display_name || 
+                    post.users?.raw_user_meta_data?.full_name || 
+                    post.users?.email?.split('@')[0] || 
+                    'Anonymous';
   
   const promptSection = showPrompt ? `
     <div class="post-full-content-section">
@@ -300,6 +318,7 @@ async function displayArchivePost(post, container) {
             </svg>
             Archive Post
           </span>
+          <span>👤 By ${authorName}</span>
           <span>📅 Posted ${new Date(post.created_at).toLocaleDateString()}</span>
           <span>🤖 AI Model: ${post.ai_model}</span>
           ${post.generation_date ? `<span>⚡ Generated: ${new Date(post.generation_date).toLocaleDateString()}</span>` : ''}
@@ -340,6 +359,12 @@ async function displayCollabPost(post, container) {
   const typeDisplay = post.type === 'request' ? 'Looking for Collaboration' : 'Offering to Collaborate';
   const typeIcon = post.type === 'request' ? '🔍' : '🎯';
   
+  // Get author name
+  const authorName = post.users?.raw_user_meta_data?.display_name || 
+                    post.users?.raw_user_meta_data?.full_name || 
+                    post.users?.email?.split('@')[0] || 
+                    'Anonymous';
+  
   // Always show favorite button - check if favorited if user is logged in
   let isFaved = false;
   if (currentUser) {
@@ -367,6 +392,7 @@ async function displayCollabPost(post, container) {
             </svg>
             Collab Post
           </span>
+          <span>👤 By ${authorName}</span>
           <span>📅 Posted ${new Date(post.created_at).toLocaleDateString()}</span>
           <span>${typeIcon} ${typeDisplay}</span>
           <span>👁️ ${post.views || 0} views</span>

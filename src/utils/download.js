@@ -62,10 +62,17 @@ export async function incrementDownloadsAndHandleContent(post, postType = 'archi
  * @param {Object} post - The post object
  */
 function downloadTextFile(post) {
+  // Get author name
+  const authorName = post.users?.raw_user_meta_data?.display_name || 
+                    post.users?.raw_user_meta_data?.full_name || 
+                    post.users?.email?.split('@')[0] || 
+                    'Anonymous';
+  
   // Create file content
   const fileContent = `${post.title}
 ${'='.repeat(post.title.length)}
 
+Author: ${authorName}
 AI Model: ${post.ai_model}
 Generated: ${post.generation_date ? new Date(post.generation_date).toLocaleDateString() : 'Unknown'}
 Tags: ${post.tags.join(', ')}
