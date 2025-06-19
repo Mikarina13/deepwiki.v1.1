@@ -29,6 +29,21 @@
           0 0 60px rgba(6, 114, 115, 0.1);
         animation: formGlow 2s ease-in-out infinite alternate;
       }
+
+      .close-login-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: transparent;
+        border: none;
+        font-size: 24px;
+        color: #067273;
+        cursor: pointer;
+      }
+
+      .close-login-btn:hover {
+        color: #045c66;
+      }
       
       .login-header {
         background-color: #07717c;
@@ -282,6 +297,7 @@
     </div>
     
     <div class="login-container">
+      <button class="close-login-btn" id="close-login-btn" title="Close">&#10005;</button>
       <div class="login-header">
         <h1>Login</h1>
       </div>

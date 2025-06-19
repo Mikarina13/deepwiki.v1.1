@@ -18,6 +18,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const forgotPasswordLink = document.querySelector('.forgot-password');
   const googleSigninButton = document.getElementById('google-signin');
   const googleSignupButton = document.getElementById('google-signup');
+  const closeBtn = document.getElementById('close-login-btn');
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      window.history.back();
+    });
+  }
   
   // Add error message elements after forms load
   const signinErrorDisplay = document.createElement('div');

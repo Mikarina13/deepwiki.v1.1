@@ -19,6 +19,19 @@ export async function initMenu() {
     menuOptions.className = 'menu-options';
     document.body.appendChild(menuOptions);
   }
+
+  // Add a close button to the menu if it doesn't exist
+  if (!menuOptions.querySelector('.close-menu-btn')) {
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'close-menu-btn';
+    closeBtn.innerHTML = '&times;';
+    closeBtn.title = 'Close';
+    closeBtn.addEventListener('click', () => {
+      isMenuLockedOpen = false;
+      closeMenu();
+    });
+    menuOptions.prepend(closeBtn);
+  }
   
   // Get authentication status
   const { data: { session } } = await supabase.auth.getSession();
