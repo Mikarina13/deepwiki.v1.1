@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { initMenu } from './utils/menu.js';
+import { escapeHtml, ensureHttps } from './utils/sanitize.js';
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -301,10 +302,10 @@ async function createPostCard(post) {
       </div>
     </div>
     
-    <h3 class="post-card-title">${post.title}</h3>
+    <h3 class="post-card-title">${escapeHtml(post.title)}</h3>
     
     <div class="post-card-meta">
-      <span>👤 ${authorName}</span>
+      <span>👤 ${escapeHtml(authorName)}</span>
       <span>•</span>
       <span>${typeIcon} ${typeDisplay}</span>
       <span>•</span>
@@ -318,14 +319,14 @@ async function createPostCard(post) {
     </div>
     
     <div class="post-card-tags">
-      ${post.tags.slice(0, 3).map(tag => `<span class="tag">${tag}</span>`).join('')}
-      ${post.tags.length > 3 ? `<span class="tag">+${post.tags.length - 3}</span>` : ''}
+      ${post.tags.slice(0, 3).map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
+      ${post.tags.length > 3 ? `<span class="tag">+${escapeHtml(String(post.tags.length - 3))}</span>` : ''}
     </div>
     
     <div class="post-card-footer">
       <span class="post-card-date">${postDate}</span>
       <div class="post-card-actions">
-        <a href="mailto:${post.contact_email}" class="contact-btn">
+        <a href="mailto:${escapeHtml(post.contact_email)}" class="contact-btn">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
             <polyline points="22,6 12,13 2,6"/>
