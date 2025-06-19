@@ -330,6 +330,7 @@ document.querySelector('.footer-links').innerHTML = `
 const pathname = window.location.pathname;
 const isArchivePage = pathname === '/' || pathname === '/index.html';
 const isCollabPage = pathname === '/collab.html';
+const searchTable = isCollabPage ? 'collab_posts' : 'archive_posts';
 
 let boltBadge = null;
 if ((isArchivePage || isCollabPage) && !document.querySelector('.bolt-badge-fixed')) {
@@ -752,32 +753,41 @@ async function performSearch() {
 
   try {
     let queryBuilder = supabase
-      .from('archive_posts')
-      .select('*')
-      .or(`title.ilike.%${query}%,content.ilike.%${query}%,tags.cs.{${query}}`);
+      .from(searchTable)
+      .select('*');
 
-    // Apply filters
-    if (currentFilters.aiModel.length > 0) {
-      const aiModelFilter = currentFilters.aiModel.map(model => {
-        if (model === 'gpt-4') return 'ai_model.ilike.*gpt-4*';
-        if (model === 'claude') return 'ai_model.ilike.*claude*';
-        if (model === 'gemini') return 'ai_model.ilike.*gemini*,ai_model.ilike.*bard*';
-        return 'ai_model.not.ilike.*gpt-4*,ai_model.not.ilike.*claude*,ai_model.not.ilike.*gemini*,ai_model.not.ilike.*bard*';
-      }).join(',');
-      queryBuilder = queryBuilder.or(aiModelFilter);
+    if (isCollabPage) {
+      queryBuilder = queryBuilder.or(`title.ilike.%${query}%,description.ilike.%${query}%,tags.cs.{${query}}`);
+    } else {
+      queryBuilder = queryBuilder.or(`title.ilike.%${query}%,content.ilike.%${query}%,tags.cs.{${query}}`);
     }
 
-    if (currentFilters.contentType === 'text') {
-      queryBuilder = queryBuilder.is('embed_url', null);
-    } else if (currentFilters.contentType === 'embedded') {
-      queryBuilder = queryBuilder.not('embed_url', 'is', null);
+    // Apply filters
+    if (!isCollabPage) {
+      if (currentFilters.aiModel.length > 0) {
+        const aiModelFilter = currentFilters.aiModel.map(model => {
+          if (model === 'gpt-4') return 'ai_model.ilike.*gpt-4*';
+          if (model === 'claude') return 'ai_model.ilike.*claude*';
+          if (model === 'gemini') return 'ai_model.ilike.*gemini*,ai_model.ilike.*bard*';
+          return 'ai_model.not.ilike.*gpt-4*,ai_model.not.ilike.*claude*,ai_model.not.ilike.*gemini*,ai_model.not.ilike.*bard*';
+        }).join(',');
+        queryBuilder = queryBuilder.or(aiModelFilter);
+      }
+
+      if (currentFilters.contentType === 'text') {
+        queryBuilder = queryBuilder.is('embed_url', null);
+      } else if (currentFilters.contentType === 'embedded') {
+        queryBuilder = queryBuilder.not('embed_url', 'is', null);
+      }
     }
 
     if (currentFilters.dateFrom) {
-      queryBuilder = queryBuilder.gte('generation_date', currentFilters.dateFrom);
+      const dateField = isCollabPage ? 'created_at' : 'generation_date';
+      queryBuilder = queryBuilder.gte(dateField, currentFilters.dateFrom);
     }
     if (currentFilters.dateTo) {
-      queryBuilder = queryBuilder.lte('generation_date', currentFilters.dateTo);
+      const dateField = isCollabPage ? 'created_at' : 'generation_date';
+      queryBuilder = queryBuilder.lte(dateField, currentFilters.dateTo);
     }
 
     if (currentFilters.viewsMin) {
@@ -814,9 +824,9 @@ function displaySearchResults(posts) {
       day: 'numeric'
     });
 
-    const contentPreview = post.content ?
-      (post.content.length > 200 ? post.content.substring(0, 200) + '...' : post.content) :
-      'Content available via embedded link';
+    const contentPreview = isCollabPage
+      ? (post.description ? (post.description.length > 200 ? post.description.substring(0, 200) + '...' : post.description) : 'No description available')
+      : (post.content ? (post.content.length > 200 ? post.content.substring(0, 200) + '...' : post.content) : 'Content available via embedded link');
 
     return `
       <div class="search-result-item" data-post-id="${post.id}">
@@ -835,7 +845,7 @@ function displaySearchResults(posts) {
           </div>
           <div class="result-meta">
             <span class="post-date">📅 ${postDate}</span>
-            <span class="ai-model">🤖 ${post.ai_model}</span>
+            ${!isCollabPage && post.ai_model ? `<span class="ai-model">🤖 ${post.ai_model}</span>` : ''}
           </div>
         </div>
       </div>
@@ -846,7 +856,8 @@ function displaySearchResults(posts) {
   document.querySelectorAll('.search-result-item').forEach(item => {
     item.addEventListener('click', () => {
       const postId = item.dataset.postId;
-      window.location.href = `/view-post.html?id=${postId}&type=archive`;
+      const type = isCollabPage ? 'collab' : 'archive';
+      window.location.href = `/view-post.html?id=${postId}&type=${type}`;
     });
   });
 }
@@ -860,7 +871,8 @@ searchInput.addEventListener('keypress', (e) => {
 });
 
 browseButton.addEventListener('click', () => {
-  window.location.href = '/browse-archive.html';
+  const target = isCollabPage ? '/browse-collab.html' : '/browse-archive.html';
+  window.location.href = target;
 });
 
 closeSearchBtn.addEventListener('click', () => {
