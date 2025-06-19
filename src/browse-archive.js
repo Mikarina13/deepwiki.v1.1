@@ -577,6 +577,8 @@ async function handleDownloadClick(button) {
       `)
       .eq('id', postId)
       .single();
+  }
+}
 function updateFavoriteButton(button, isFaved) {
   const svg = button.querySelector('svg');
   
