@@ -895,6 +895,17 @@ body {
   letter-spacing: 0.5px;
 }
 
+.download-count {
+  color: #067273;
+  background: rgba(6, 114, 115, 0.1);
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 .collab-type {
   color: #b8860b;
   background: rgba(250, 198, 55, 0.2);

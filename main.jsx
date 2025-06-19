@@ -541,6 +541,7 @@ function renderArchiveCards() {
           <div class="card-metrics">
             <span class="view-count">0 views</span>
             <span class="favorite-count">❤️ 0</span>
+            <span class="download-count">⬇️ 0</span>
           </div>
         </div>
         <div class="card-prompt">
@@ -595,6 +596,7 @@ function renderArchiveCards() {
           <div class="card-metrics">
             <span class="view-count">${post.views || 0} views</span>
             <span class="favorite-count">❤️ ${post.favorite_count || 0}</span>
+            <span class="download-count">⬇️ ${post.downloads || 0}</span>
           </div>
         </div>
         ${promptPreview ? `
