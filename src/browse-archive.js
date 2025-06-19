@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { initMenu } from './utils/menu.js';
+import { incrementDownloadsAndHandleContent } from './utils/download.js';
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -314,6 +315,8 @@ async function createPostCard(post) {
       <span>👁️ ${post.views || 0} views</span>
       <span>•</span>
       <span>❤️ ${post.favorite_count || 0}</span>
+      <span>•</span>
+      <span class="download-count">📥 ${post.downloads || 0}</span>
     </div>
     
     <div class="post-card-content">
@@ -328,6 +331,16 @@ async function createPostCard(post) {
     <div class="post-card-footer">
       <span class="post-card-date">${postDate}</span>
       <div class="post-card-actions">
+        <button class="download-btn" 
+                data-post-id="${post.id}" 
+                data-post-type="archive"
+                title="Download content">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7,10 12,15 17,10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+        </button>
         ${currentUser ? `
           <button class="favorite-btn ${isFavorited ? 'favorited' : ''}" 
                   data-post-id="${post.id}" 
@@ -468,6 +481,12 @@ function setupEventListeners() {
       e.stopPropagation();
       await handleFavoriteClick(e.target.closest('.favorite-btn'));
     }
+    
+    // Download button clicks
+    if (e.target.closest('.download-btn')) {
+      e.stopPropagation();
+      await handleDownloadClick(e.target.closest('.download-btn'));
+    }
   });
 }
 
@@ -541,6 +560,17 @@ async function handleFavoriteClick(button) {
   }
 }
 
+async function handleDownloadClick(button) {
+  const postId = button.dataset.postId;
+  const postType = button.dataset.postType;
+
+  try {
+    // Get post data for download
+    const { data: post } = await supabase
+      .from('archive_posts')
+      .select('*')
+      .eq('id', postId)
+      .single();
 function updateFavoriteButton(button, isFaved) {
   const svg = button.querySelector('svg');
   

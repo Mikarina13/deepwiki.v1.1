@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { initMenu } from './utils/menu.js';
+import { incrementDownloadsAndHandleContent } from './utils/download.js';
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -280,7 +281,17 @@ async function displayArchivePost(post, container) {
       <div class="post-full-header">
         <div class="post-header-actions">
           <h1 class="post-full-title">${post.title}</h1>
-          ${favoriteButton}
+          <div class="post-action-buttons">
+            ${favoriteButton}
+            <button class="download-btn" id="download-btn" data-post-id="${post.id}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7,10 12,15 17,10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Download
+            </button>
+          </div>
         </div>
         <div class="post-full-meta">
           <span class="post-type-badge">
@@ -293,6 +304,7 @@ async function displayArchivePost(post, container) {
           <span>🤖 AI Model: ${post.ai_model}</span>
           ${post.generation_date ? `<span>⚡ Generated: ${new Date(post.generation_date).toLocaleDateString()}</span>` : ''}
           <span>👁️ ${post.views || 0} views</span>
+          <span class="post-full-download-count">📥 ${post.downloads || 0} downloads</span>
         </div>
       </div>
 
@@ -319,6 +331,9 @@ async function displayArchivePost(post, container) {
   
   // Add event listener for favorite button
   setupFavoriteButton(post);
+  
+  // Add event listener for download button
+  setupDownloadButton(post);
 }
 
 async function displayCollabPost(post, container) {
@@ -338,7 +353,9 @@ async function displayCollabPost(post, container) {
       <div class="post-full-header">
         <div class="post-header-actions">
           <h1 class="post-full-title">${post.title}</h1>
-          ${favoriteButton}
+          <div class="post-action-buttons">
+            ${favoriteButton}
+          </div>
         </div>
         <div class="post-full-meta">
           <span class="post-type-badge">
@@ -500,6 +517,15 @@ function setupFavoriteButton(post) {
       console.error('Error managing favorite:', error);
       showNotification(error.message, 'error');
     }
+  });
+}
+
+function setupDownloadButton(post) {
+  const downloadBtn = document.querySelector('.download-btn');
+  if (!downloadBtn) return;
+
+  downloadBtn.addEventListener('click', async () => {
+    await incrementDownloadsAndHandleContent(post, 'archive');
   });
 }
 
