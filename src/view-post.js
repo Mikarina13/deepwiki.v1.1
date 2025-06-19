@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { initMenu } from './utils/menu.js';
+import { escapeHtml, ensureHttps } from './utils/sanitize.js';
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -263,7 +264,7 @@ async function displayArchivePost(post, container) {
         </svg>
         Original Prompt
       </h2>
-      <div class="post-full-text">${post.prompt}</div>
+      <div class="post-full-text">${escapeHtml(post.prompt)}</div>
     </div>
   ` : `
     <div class="post-full-content-section">
@@ -302,7 +303,7 @@ async function displayArchivePost(post, container) {
     <div class="post-full-content">
       <div class="post-full-header">
         <div class="post-header-actions">
-          <h1 class="post-full-title">${post.title}</h1>
+          <h1 class="post-full-title">${escapeHtml(post.title)}</h1>
           ${favoriteButton}
           ${downloadButton}
         </div>
@@ -314,7 +315,7 @@ async function displayArchivePost(post, container) {
             Archive Post
           </span>
           <span>📅 Posted ${new Date(post.created_at).toLocaleDateString()}</span>
-          <span>🤖 AI Model: ${post.ai_model}</span>
+          <span>🤖 AI Model: ${escapeHtml(post.ai_model)}</span>
           ${post.generation_date ? `<span>⚡ Generated: ${new Date(post.generation_date).toLocaleDateString()}</span>` : ''}
           <span>👁️ ${post.views || 0} views</span>
           <span>⬇️ ${post.downloads || 0}</span>
@@ -334,7 +335,7 @@ async function displayArchivePost(post, container) {
           Tags
         </h2>
         <div class="post-full-tags">
-          ${post.tags.map(tag => `<span class="post-full-tag">${tag}</span>`).join('')}
+          ${post.tags.map(tag => `<span class="post-full-tag">${escapeHtml(tag)}</span>`).join('')}
         </div>
       </div>
     </div>
@@ -363,7 +364,7 @@ async function displayCollabPost(post, container) {
     <div class="post-full-content">
       <div class="post-full-header">
         <div class="post-header-actions">
-          <h1 class="post-full-title">${post.title}</h1>
+          <h1 class="post-full-title">${escapeHtml(post.title)}</h1>
           ${favoriteButton}
         </div>
         <div class="post-full-meta">
@@ -390,7 +391,7 @@ async function displayCollabPost(post, container) {
           </svg>
           Project Description
         </h2>
-        <div class="post-full-text">${post.description}</div>
+        <div class="post-full-text">${escapeHtml(post.description)}</div>
       </div>
 
       <div class="contact-section">
@@ -404,12 +405,12 @@ async function displayCollabPost(post, container) {
         <p style="color: #067273; margin-bottom: 16px; font-size: 16px;">
           Ready to collaborate? Reach out using the contact information below:
         </p>
-        <a href="mailto:${post.contact_email}" class="contact-email">
+        <a href="mailto:${escapeHtml(post.contact_email)}" class="contact-email">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
             <polyline points="22,6 12,13 2,6"/>
           </svg>
-          ${post.contact_email}
+          ${escapeHtml(post.contact_email)}
         </a>
       </div>
 
@@ -422,7 +423,7 @@ async function displayCollabPost(post, container) {
           Skills & Technologies
         </h2>
         <div class="post-full-tags">
-          ${post.tags.map(tag => `<span class="post-full-tag">${tag}</span>`).join('')}
+          ${post.tags.map(tag => `<span class="post-full-tag">${escapeHtml(tag)}</span>`).join('')}
         </div>
       </div>
     </div>
@@ -567,7 +568,8 @@ function updateFavoriteButton(button, isFaved) {
 }
 
 function generateEmbedSection(embedUrl) {
-  const isGoogleDoc = embedUrl.includes('docs.google.com') || 
+  const safeUrl = escapeHtml(ensureHttps(embedUrl));
+  const isGoogleDoc = embedUrl.includes('docs.google.com') ||
                       embedUrl.includes('drive.google.com') ||
                       embedUrl.includes('sheets.google.com') ||
                       embedUrl.includes('slides.google.com');
@@ -600,7 +602,7 @@ function generateEmbedSection(embedUrl) {
           <p style="color: #666; margin-bottom: 30px; font-size: 18px; line-height: 1.6;">
             This content cannot be embedded directly due to security restrictions, but you can access the full ${isChatGPT ? 'conversation' : 'document'} by clicking the button below.
           </p>
-          <a href="${embedUrl}" target="_blank" rel="noopener noreferrer" 
+          <a href="${safeUrl}" target="_blank" rel="noopener noreferrer"
              style="display: inline-flex; align-items: center; gap: 12px; background: #067273; color: white; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 18px; transition: all 0.2s ease;">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
@@ -625,7 +627,7 @@ function generateEmbedSection(embedUrl) {
         </h2>
         <div class="post-full-embed">
           <iframe 
-            src="${embedUrl}" 
+            src="${safeUrl}"
             width="100%" 
             height="600" 
             frameborder="0"
@@ -635,7 +637,7 @@ function generateEmbedSection(embedUrl) {
           </iframe>
         </div>
         <p style="text-align: center; margin-top: 16px;">
-          <a href="${embedUrl}" target="_blank" rel="noopener noreferrer" 
+          <a href="${safeUrl}" target="_blank" rel="noopener noreferrer"
              style="color: #067273; text-decoration: none; font-weight: 500;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;">
               <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
@@ -663,7 +665,7 @@ function generateContentSection(content) {
         </svg>
         AI-Generated Content
       </h2>
-      <div class="post-full-text">${content}</div>
+      <div class="post-full-text">${escapeHtml(content)}</div>
     </div>
   `;
 }

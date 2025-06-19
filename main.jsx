@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { initMenu } from './src/utils/menu.js';
+import { escapeHtml } from './src/utils/sanitize.js';
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -825,13 +826,13 @@ function displaySearchResults(posts) {
     });
 
     const contentPreview = isCollabPage
-      ? (post.description ? (post.description.length > 200 ? post.description.substring(0, 200) + '...' : post.description) : 'No description available')
-      : (post.content ? (post.content.length > 200 ? post.content.substring(0, 200) + '...' : post.content) : 'Content available via embedded link');
+      ? (post.description ? (post.description.length > 200 ? escapeHtml(post.description.substring(0, 200)) + '...' : escapeHtml(post.description)) : 'No description available')
+      : (post.content ? (post.content.length > 200 ? escapeHtml(post.content.substring(0, 200)) + '...' : escapeHtml(post.content)) : 'Content available via embedded link');
 
     return `
       <div class="search-result-item" data-post-id="${post.id}">
         <div class="result-header">
-          <h3>${post.title}</h3>
+          <h3>${escapeHtml(post.title)}</h3>
           <div class="result-metrics">
             <span class="view-count">${post.views || 0} views</span>
           </div>
@@ -841,11 +842,11 @@ function displaySearchResults(posts) {
         </div>
         <div class="result-footer">
           <div class="result-tags">
-            ${post.tags.slice(0, 3).map(tag => `<span class="tag">${tag}</span>`).join('')}
+            ${post.tags.slice(0, 3).map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
           </div>
           <div class="result-meta">
             <span class="post-date">📅 ${postDate}</span>
-            ${!isCollabPage && post.ai_model ? `<span class="ai-model">🤖 ${post.ai_model}</span>` : ''}
+            ${!isCollabPage && post.ai_model ? `<span class="ai-model">🤖 ${escapeHtml(post.ai_model)}</span>` : ''}
           </div>
         </div>
       </div>
