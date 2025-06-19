@@ -50,6 +50,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const forms = document.querySelectorAll('.publish-form');
   const archiveForm = document.getElementById('archive-form');
   const collabForm = document.getElementById('collab-form');
+  const closeBtn = document.getElementById('close-publish-btn');
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      if (document.referrer && document.referrer !== window.location.href) {
+        window.history.back();
+      } else {
+        window.location.href = '/';
+      }
+    });
+  }
 
   // Content choice buttons
   const choiceButtons = document.querySelectorAll('.choice-button');
