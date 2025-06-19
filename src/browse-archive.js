@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { initMenu } from './utils/menu.js';
+import { escapeHtml, ensureHttps } from './utils/sanitize.js';
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -58,8 +59,8 @@ async function loadPopularTags() {
 
 function displayPopularTags() {
   const popularTagsContainer = document.getElementById('popular-tags');
-  popularTagsContainer.innerHTML = popularTags.map(tag => 
-    `<span class="tag-filter" data-tag="${tag}">${tag}</span>`
+  popularTagsContainer.innerHTML = popularTags.map(tag =>
+    `<span class="tag-filter" data-tag="${escapeHtml(tag)}">${escapeHtml(tag)}</span>`
   ).join('');
 }
 
@@ -304,12 +305,12 @@ async function createPostCard(post) {
       </div>
     </div>
     
-    <h3 class="post-card-title">${post.title}</h3>
+    <h3 class="post-card-title">${escapeHtml(post.title)}</h3>
     
     <div class="post-card-meta">
-      <span>👤 ${authorName}</span>
+      <span>👤 ${escapeHtml(authorName)}</span>
       <span>•</span>
-      <span>🤖 ${post.ai_model}</span>
+      <span>🤖 ${escapeHtml(post.ai_model)}</span>
       <span>•</span>
       <span>👁️ ${post.views || 0} views</span>
       <span>•</span>
@@ -322,8 +323,8 @@ async function createPostCard(post) {
     </div>
     
     <div class="post-card-tags">
-      ${post.tags.slice(0, 3).map(tag => `<span class="tag">${tag}</span>`).join('')}
-      ${post.tags.length > 3 ? `<span class="tag">+${post.tags.length - 3}</span>` : ''}
+      ${post.tags.slice(0, 3).map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
+      ${post.tags.length > 3 ? `<span class="tag">+${escapeHtml(String(post.tags.length - 3))}</span>` : ''}
     </div>
     
     <div class="post-card-footer">
