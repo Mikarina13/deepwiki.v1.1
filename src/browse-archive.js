@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { initMenu } from './utils/menu.js';
+import { incrementDownloadsAndHandleContent } from './utils/download.js';
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -13,12 +14,6 @@ let totalPosts = 0;
 let isLoading = false;
 let popularTags = [];
 let selectedTags = [];
-let activeFilters = {
-  aiModel: null,
-  contentType: null,
-  time: null
-};
-let currentPosts = []; // Store current posts for download functionality
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Initialize the menu
@@ -33,63 +28,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadPosts();
   setupEventListeners();
 });
-
-function setupQuickFilters() {
-  const filterChips = document.querySelectorAll('.filter-chip');
-  const clearAllBtn = document.getElementById('clear-all-filters');
-  
-  // Handle filter chip clicks
-  filterChips.forEach(chip => {
-    chip.addEventListener('click', () => {
-      const filterType = chip.dataset.filter;
-      const filterValue = chip.dataset.value;
-      
-      // Toggle filter
-      if (chip.classList.contains('active')) {
-        // Remove filter
-        chip.classList.remove('active');
-        activeFilters[toCamelCase(filterType)] = null;
-      } else {
-        // Remove other active filters of the same type
-        filterChips.forEach(otherChip => {
-          if (otherChip.dataset.filter === filterType) {
-            otherChip.classList.remove('active');
-          }
-        });
-        
-        // Add this filter
-        chip.classList.add('active');
-        activeFilters[toCamelCase(filterType)] = filterValue;
-      }
-      
-      // Apply filters
-      performSearch();
-    });
-  });
-  
-  // Handle clear all
-  clearAllBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    
-    // Clear all active filters
-    filterChips.forEach(chip => chip.classList.remove('active'));
-    activeFilters = {
-      aiModel: null,
-      contentType: null,
-      time: null
-    };
-    
-    // Clear search
-    document.getElementById('search-input').value = '';
-    
-    // Reload posts
-    performSearch();
-  });
-}
-
-function toCamelCase(str) {
-  return str.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
-}
 
 async function loadPopularTags() {
   try {
@@ -129,13 +67,11 @@ function displayPopularTags() {
 async function loadPosts(page = 1, filters = {}) {
   if (isLoading) return;
   
-  // Merge active quick filters with other filters
-  const allFilters = { ...filters, ...getQuickFilters() };
-  
   isLoading = true;
   showLoading();
   
   try {
+    const allFilters = { ...filters, ...getTopFilters() };
     const { 
       searchTerm = '', 
       aiModel = '', 
@@ -167,7 +103,7 @@ async function loadPosts(page = 1, filters = {}) {
     
     // Apply AI model filter
     if (aiModel) {
-      if (aiModel === 'gpt') {
+      if (aiModel === 'gpt-4') {
         query = query.or('ai_model.ilike.%gpt-4%,ai_model.ilike.%gpt4%');
       } else if (aiModel === 'claude') {
         query = query.ilike('ai_model', '%claude%');
@@ -258,9 +194,6 @@ async function loadPosts(page = 1, filters = {}) {
     totalPosts = count || 0;
     currentPage = page;
     
-    // Store posts for download functionality
-    currentPosts = posts || [];
-    
     await displayPosts(posts || []);
     updateStats();
     updatePagination();
@@ -273,31 +206,22 @@ async function loadPosts(page = 1, filters = {}) {
   }
 }
 
-function getQuickFilters() {
+function getTopFilters() {
   const filters = {
-    aiModel: activeFilters.aiModel || '',
-    contentType: activeFilters.contentType || 'all',
-    dateFrom: '',
-    dateTo: ''
+    aiModel: [],
+    contentType: document.querySelector('input[name="content-type"]:checked')?.value || 'all',
+    promptVisibility: document.querySelector('input[name="prompt-visibility"]:checked')?.value || 'all',
+    dateFrom: document.querySelector('input[name="date-from"]')?.value || '',
+    dateTo: document.querySelector('input[name="date-to"]')?.value || '',
+    viewsMin: document.querySelector('input[name="views-min"]')?.value || '',
+    viewsMax: document.querySelector('input[name="views-max"]')?.value || '',
+    tags: selectedTags
   };
   
-  // Handle time filters
-  if (activeFilters.time) {
-    const now = new Date();
-    switch (activeFilters.time) {
-      case 'today':
-        filters.dateFrom = now.toISOString().split('T')[0];
-        break;
-      case 'week':
-        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        filters.dateFrom = weekAgo.toISOString().split('T')[0];
-        break;
-      case 'month':
-        const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-        filters.dateFrom = monthAgo.toISOString().split('T')[0];
-        break;
-    }
-  }
+  // Get selected AI models
+  document.querySelectorAll('input[name="ai-model"]:checked').forEach(checkbox => {
+    filters.aiModel.push(checkbox.value);
+  });
   
   return filters;
 }
@@ -478,9 +402,6 @@ function setupEventListeners() {
   const tagSearchInput = document.getElementById('tag-search-input');
   const clearFiltersBtn = document.getElementById('clear-filters');
   
-  // Setup quick filters
-  setupQuickFilters();
-  
   // Debounced search
   let searchTimeout;
   searchInput.addEventListener('input', (e) => {
@@ -492,6 +413,13 @@ function setupEventListeners() {
   
   // Filter changes
   sortFilter.addEventListener('change', performSearch);
+  
+  // Top filter changes
+  document.addEventListener('change', (e) => {
+    if (e.target.matches('input[name="ai-model"], input[name="content-type"], input[name="prompt-visibility"], input[name="date-from"], input[name="date-to"], input[name="views-min"], input[name="views-max"]')) {
+      performSearch();
+    }
+  });
   
   // Tag search
   if (tagSearchInput) {
@@ -530,6 +458,11 @@ function setupEventListeners() {
   // Clear filters
   if (clearFiltersBtn) {
     clearFiltersBtn.addEventListener('click', () => {
+      // Clear all form inputs
+      document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+      document.querySelectorAll('input[type="radio"][value="all"]').forEach(radio => radio.checked = true);
+      document.querySelectorAll('input[type="date"], input[type="number"], input[type="text"]').forEach(input => input.value = '');
+      
       // Clear selected tags
       selectedTags = [];
       document.querySelectorAll('.tag-filter.active').forEach(tag => tag.classList.remove('active'));
@@ -552,15 +485,7 @@ function setupEventListeners() {
     // Download button clicks
     if (e.target.closest('.download-btn')) {
       e.stopPropagation();
-      const button = e.target.closest('.download-btn');
-      const postCard = button.closest('.post-card');
-      const postId = button.dataset.postId;
-      
-      // Find the post data from the current posts array
-      const post = currentPosts.find(p => p.id === postId);
-      if (post) {
-        await handleDownloadClick(button, post);
-      }
+      await handleDownloadClick(e.target.closest('.download-btn'));
     }
   });
 }
@@ -635,106 +560,24 @@ async function handleFavoriteClick(button) {
   }
 }
 
-async function handleDownloadClick(button, post) {
+async function handleDownloadClick(button) {
   const postId = button.dataset.postId;
   const postType = button.dataset.postType;
 
   try {
-    // Increment download count
-    const { data: currentPost, error: selectError } = await supabase
+    // Get post data for download
+    const { data: post } = await supabase
       .from('archive_posts')
-      .select('downloads')
+      .select(`
+        *,
+        users:user_id (
+          email,
+          raw_user_meta_data
+        )
+      `)
       .eq('id', postId)
       .single();
-
-    if (!selectError) {
-      const newDownloadCount = (currentPost.downloads || 0) + 1;
-      
-      await supabase
-        .from('archive_posts')
-        .update({ downloads: newDownloadCount })
-        .eq('id', postId);
-    }
-
-    // Handle content download
-    if (post.embed_url) {
-      // If there's an embed URL, open it in a new tab
-      window.open(post.embed_url, '_blank', 'noopener,noreferrer');
-      showNotification('Opening content in new tab...', 'success');
-    } else if (post.content) {
-      // If there's content, create and download a text file
-      downloadTextFile(post);
-      showNotification('Download started!', 'success');
-    } else {
-      showNotification('No downloadable content available', 'error');
-      return;
-    }
-
-    // Update the download count in the UI
-    const downloadCountElement = button.closest('.post-card').querySelector('.download-count');
-    if (downloadCountElement) {
-      downloadCountElement.textContent = `📥 ${(currentPost?.downloads || 0) + 1}`;
-    }
-
-  } catch (error) {
-    console.error('Error handling download:', error);
-    showNotification('Failed to download content. Please try again.', 'error');
   }
-}
-
-function downloadTextFile(post) {
-  // Get author name
-  const authorName = post.users?.raw_user_meta_data?.display_name || 
-                    post.users?.raw_user_meta_data?.full_name || 
-                    post.users?.email?.split('@')[0] || 
-                    'Anonymous';
-  
-  // Create file content
-  const fileContent = `${post.title}
-${'='.repeat(post.title.length)}
-
-Author: ${authorName}
-AI Model: ${post.ai_model}
-Generated: ${post.generation_date ? new Date(post.generation_date).toLocaleDateString() : 'Unknown'}
-Tags: ${post.tags.join(', ')}
-
-${post.prompt_is_public !== false ? `Original Prompt:
-${'-'.repeat(16)}
-${post.prompt}
-
-` : ''}AI-Generated Content:
-${'-'.repeat(21)}
-${post.content}
-
----
-Downloaded from DeepWiki.io
-Post ID: ${post.id}
-Downloaded on: ${new Date().toLocaleString()}
-`;
-
-  // Create blob and download
-  const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  
-  // Create temporary download link
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `${sanitizeFilename(post.title)}.txt`;
-  
-  // Trigger download
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  
-  // Clean up
-  URL.revokeObjectURL(url);
-}
-
-function sanitizeFilename(filename) {
-  return filename
-    .replace(/[^a-z0-9\s\-_]/gi, '') // Remove special characters
-    .replace(/\s+/g, '_') // Replace spaces with underscores
-    .substring(0, 100); // Limit length
 }
 function updateFavoriteButton(button, isFaved) {
   const svg = button.querySelector('svg');
