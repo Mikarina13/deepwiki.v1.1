@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { initMenu } from './src/utils/menu.js';
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -25,7 +26,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function initializeApp() {
   await loadRecentPosts();
-  updateAuthUI();
+  initMenu();
   setupSearch();
 }
 
