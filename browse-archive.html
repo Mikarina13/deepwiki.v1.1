@@ -35,10 +35,490 @@
         margin: 0;
       }
 
+      /* Enhanced Premium Filters Section */
+      .filters-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 50%, #f1f3f4 100%);
+        border-radius: 20px;
+        padding: 35px;
+        margin-bottom: 45px;
+        border: 3px solid transparent;
+        background-clip: padding-box;
+        box-shadow: 
+          0 15px 35px rgba(6, 114, 115, 0.15),
+          0 5px 15px rgba(6, 114, 115, 0.08),
+          inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        position: relative;
+        animation: premiumGlow 3s ease-in-out infinite alternate;
+      }
+      
+      .filters-section::before {
+        content: '';
+        position: absolute;
+        top: -3px;
+        left: -3px;
+        right: -3px;
+        bottom: -3px;
+        background: linear-gradient(135deg, #067273, #fac637, #067273);
+        border-radius: 20px;
+        z-index: -1;
+        opacity: 0.8;
+      }
+      
+      .filters-title {
+        color: #067273;
+        font-size: 26px;
+        font-weight: 800;
+        margin-bottom: 30px;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        text-shadow: 0 2px 4px rgba(6, 114, 115, 0.1);
+      }
+      
+      .filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 30px;
+        margin-bottom: 35px;
+      }
+      
+      .filter-group {
+        background: linear-gradient(145deg, #ffffff 0%, #fafbfc 100%);
+        padding: 25px;
+        border-radius: 16px;
+        border: 2px solid rgba(6, 114, 115, 0.12);
+        box-shadow: 
+          0 8px 25px rgba(6, 114, 115, 0.08),
+          0 3px 10px rgba(6, 114, 115, 0.04),
+          inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .filter-group::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(250, 198, 55, 0.1), transparent);
+        transition: left 0.5s ease;
+      }
+      
+      .filter-group:hover {
+        transform: translateY(-3px);
+        border-color: rgba(250, 198, 55, 0.4);
+        box-shadow: 
+          0 15px 40px rgba(6, 114, 115, 0.12),
+          0 8px 20px rgba(250, 198, 55, 0.08),
+          inset 0 1px 0 rgba(255, 255, 255, 0.95);
+      }
+      
+      .filter-group:hover::before {
+        left: 100%;
+      }
+      
+      .filter-group h4 {
+        color: #067273;
+        font-size: 17px;
+        font-weight: 700;
+        margin-bottom: 18px;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        border-bottom: 2px dashed rgba(6, 114, 115, 0.15);
+        padding-bottom: 12px;
+        position: relative;
+      }
+      
+      .filter-group h4::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: linear-gradient(90deg, #067273, #fac637);
+        transition: width 0.3s ease;
+      }
+      
+      .filter-group:hover h4::after {
+        width: 100%;
+      }
+      
+      .filter-options {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 10px;
+      }
+      
+      .filter-option {
+        margin-bottom: 10px;
+      }
+      
+      .filter-option label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        font-size: 14px;
+        color: #333;
+        padding: 8px 12px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-weight: 500;
+        border-radius: 8px;
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .filter-option label::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(6, 114, 115, 0.05), transparent);
+        transition: left 0.3s ease;
+      }
+      
+      .filter-option label:hover {
+        color: #067273;
+        background: linear-gradient(135deg, rgba(6, 114, 115, 0.08), rgba(250, 198, 55, 0.06));
+        padding-left: 16px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(6, 114, 115, 0.1);
+      }
+      
+      .filter-option label:hover::before {
+        left: 100%;
+      }
+      
+      .filter-option input[type="checkbox"],
+      .filter-option input[type="radio"] {
+        width: 18px;
+        height: 18px;
+        accent-color: #067273;
+        cursor: pointer;
+      }
+      
+      .filter-range {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      
+      .filter-range input {
+        flex: 1;
+        padding: 10px 14px;
+        border: 2px solid rgba(6, 114, 115, 0.2);
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: linear-gradient(145deg, #ffffff, #fafbfc);
+      }
+      
+      .filter-range input:focus {
+        outline: none;
+        border-color: #067273;
+        box-shadow: 
+          0 0 0 3px rgba(6, 114, 115, 0.1),
+          0 2px 8px rgba(6, 114, 115, 0.15);
+        background: #ffffff;
+      }
+      
+      .filter-range span {
+        font-size: 14px;
+        color: #666;
+        font-weight: 600;
+      }
+      
+      .date-inputs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      
+      .date-inputs input {
+        padding: 10px 14px;
+        border: 2px solid rgba(6, 114, 115, 0.2);
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: linear-gradient(145deg, #ffffff, #fafbfc);
+      }
+      
+      .date-inputs input:focus {
+        outline: none;
+        border-color: #067273;
+        box-shadow: 
+          0 0 0 3px rgba(6, 114, 115, 0.1),
+          0 2px 8px rgba(6, 114, 115, 0.15);
+        background: #ffffff;
+      }
 
+      /* Enhanced Tags Filter */
+      .tags-filter-group {
+        grid-column: 1 / -1;
+        background: linear-gradient(145deg, #ffffff 0%, #fafbfc 100%);
+        padding: 25px;
+        border-radius: 16px;
+        border: 2px solid rgba(6, 114, 115, 0.12);
+        box-shadow: 
+          0 8px 25px rgba(6, 114, 115, 0.08),
+          0 3px 10px rgba(6, 114, 115, 0.04),
+          inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .tag-search-container {
+        margin-bottom: 18px;
+      }
+      
+      .tag-search input {
+        width: 100%;
+        max-width: 450px;
+        padding: 14px 20px;
+        border: 2px solid rgba(6, 114, 115, 0.2);
+        border-radius: 12px;
+        font-size: 16px;
+        margin: 0 auto;
+        display: block;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: linear-gradient(145deg, #ffffff, #fafbfc);
+      }
+      
+      .tag-search input:focus {
+        outline: none;
+        border-color: #067273;
+        box-shadow: 
+          0 0 0 4px rgba(6, 114, 115, 0.1),
+          0 4px 12px rgba(6, 114, 115, 0.15);
+        background: #ffffff;
+      }
+      
+      .popular-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: center;
+        margin-top: 18px;
+        min-height: 60px;
+        padding: 20px;
+        background: linear-gradient(135deg, rgba(6, 114, 115, 0.03), rgba(250, 198, 55, 0.02));
+        border-radius: 12px;
+        border: 2px dashed rgba(6, 114, 115, 0.2);
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .popular-tags::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent 30%, rgba(250, 198, 55, 0.02) 50%, transparent 70%);
+        animation: shimmer 3s ease-in-out infinite;
+      }
+      
+      .tag-filter {
+        background: linear-gradient(135deg, #067273, #0a8a8c);
+        color: white;
+        border: 2px solid transparent;
+        padding: 10px 18px;
+        border-radius: 25px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-weight: 600;
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+      }
+      
+      .tag-filter::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s ease;
+        z-index: -1;
+      }
+      
+      .tag-filter:hover {
+        background: linear-gradient(135deg, #fac637, #f8c832);
+        color: #067273;
+        border-color: #fac637;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(250, 198, 55, 0.3);
+      }
+      
+      .tag-filter:hover::before {
+        left: 100%;
+      }
+      
+      .tag-filter.active {
+        background: linear-gradient(135deg, #fac637, #f8c832);
+        color: #067273;
+        border-color: #fac637;
+        box-shadow: 0 4px 15px rgba(250, 198, 55, 0.4);
+      }
 
+      /* Enhanced Filter Actions */
+      .filter-actions {
+        text-align: center;
+        padding-top: 25px;
+        border-top: 2px solid rgba(6, 114, 115, 0.1);
+        position: relative;
+      }
+      
+      .filter-actions::before {
+        content: '';
+        position: absolute;
+        top: -1px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 2px;
+        background: linear-gradient(90deg, #067273, #fac637);
+      }
+      
+      .clear-filters-btn {
+        padding: 16px 35px;
+        background: linear-gradient(135deg, #dc3545, #c82333);
+        color: white;
+        border: 2px solid rgba(220, 53, 69, 0.3);
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .clear-filters-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s ease;
+      }
+      
+      .clear-filters-btn:hover {
+        background: linear-gradient(135deg, #c82333, #a71e2a);
+        transform: translateY(-2px);
+        box-shadow: 
+          0 8px 25px rgba(220, 53, 69, 0.4),
+          0 4px 12px rgba(220, 53, 69, 0.2);
+        border-color: rgba(220, 53, 69, 0.5);
+      }
+      
+      .clear-filters-btn:hover::before {
+        left: 100%;
+      }
 
+      /* Premium Animations */
+      @keyframes premiumGlow {
+        0% {
+          box-shadow: 
+            0 15px 35px rgba(6, 114, 115, 0.15),
+            0 5px 15px rgba(6, 114, 115, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        }
+        100% {
+          box-shadow: 
+            0 20px 45px rgba(6, 114, 115, 0.2),
+            0 8px 25px rgba(6, 114, 115, 0.12),
+            inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        }
+      }
+      
+      @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+      }
 
+      /* Style the actual filter elements that appear in the screenshot */
+      .browse-container .filters-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 50%, #f1f3f4 100%) !important;
+        border-radius: 20px !important;
+        padding: 35px !important;
+        margin-bottom: 45px !important;
+        border: 3px solid transparent !important;
+        background-clip: padding-box !important;
+        box-shadow: 
+          0 15px 35px rgba(6, 114, 115, 0.15),
+          0 5px 15px rgba(6, 114, 115, 0.08),
+          inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+        position: relative !important;
+        animation: premiumGlow 3s ease-in-out infinite alternate !important;
+      }
+      
+      .browse-container .filters-section::before {
+        content: '' !important;
+        position: absolute !important;
+        top: -3px !important;
+        left: -3px !important;
+        right: -3px !important;
+        bottom: -3px !important;
+        background: linear-gradient(135deg, #067273, #fac637, #067273) !important;
+        border-radius: 20px !important;
+        z-index: -1 !important;
+        opacity: 0.8 !important;
+      }
+      
+      .browse-container .filter-group {
+        background: linear-gradient(145deg, #ffffff 0%, #fafbfc 100%) !important;
+        padding: 25px !important;
+        border-radius: 16px !important;
+        border: 2px solid rgba(6, 114, 115, 0.12) !important;
+        box-shadow: 
+          0 8px 25px rgba(6, 114, 115, 0.08),
+          0 3px 10px rgba(6, 114, 115, 0.04),
+          inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        position: relative !important;
+        overflow: hidden !important;
+        margin-bottom: 20px !important;
+      }
+      
+      .browse-container .filter-group:hover {
+        transform: translateY(-3px) !important;
+        border-color: rgba(250, 198, 55, 0.4) !important;
+        box-shadow: 
+          0 15px 40px rgba(6, 114, 115, 0.12),
+          0 8px 20px rgba(250, 198, 55, 0.08),
+          inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
+      }
+      
+      .browse-container .filter-group h4 {
+        color: #067273 !important;
+        font-size: 17px !important;
+        font-weight: 700 !important;
+        margin-bottom: 18px !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.8px !important;
+        border-bottom: 2px dashed rgba(6, 114, 115, 0.15) !important;
+        padding-bottom: 12px !important;
+        position: relative !important;
+      }
 
       /* Search and Controls */
       .browse-controls {
@@ -48,79 +528,6 @@
         margin-bottom: 30px;
         flex-wrap: wrap;
         gap: 20px;
-      }
-      
-      /* New Clean Filter Design */
-      .quick-filters {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        margin-bottom: 20px;
-        align-items: center;
-      }
-      
-      .filter-label {
-        color: #067273;
-        font-weight: 600;
-        font-size: 14px;
-        margin-right: 8px;
-      }
-      
-      .filter-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 8px 16px;
-        background: white;
-        color: #067273;
-        border: 2px solid rgba(6, 114, 115, 0.2);
-        border-radius: 20px;
-        font-size: 14px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        text-decoration: none;
-        user-select: none;
-      }
-      
-      .filter-chip:hover {
-        background: rgba(6, 114, 115, 0.05);
-        border-color: rgba(6, 114, 115, 0.4);
-        transform: translateY(-1px);
-      }
-      
-      .filter-chip.active {
-        background: #067273;
-        color: white;
-        border-color: #067273;
-      }
-      
-      .filter-chip.active:hover {
-        background: #045c66;
-        border-color: #045c66;
-      }
-      
-      .filter-divider {
-        width: 1px;
-        height: 24px;
-        background: rgba(6, 114, 115, 0.2);
-        margin: 0 8px;
-      }
-      
-      .clear-all-filters {
-        color: #dc3545;
-        font-size: 13px;
-        font-weight: 500;
-        cursor: pointer;
-        padding: 6px 12px;
-        border-radius: 12px;
-        transition: all 0.2s ease;
-        text-decoration: none;
-      }
-      
-      .clear-all-filters:hover {
-        background: rgba(220, 53, 69, 0.1);
-        color: #c82333;
       }
       
       .browse-search {
@@ -474,16 +881,6 @@
         .browse-title {
           font-size: 28px;
         }
-        
-        .quick-filters {
-          justify-content: center;
-        }
-        
-        .filter-label {
-          width: 100%;
-          text-align: center;
-          margin-bottom: 12px;
-        }
       }
     </style>
   </head>
@@ -531,89 +928,6 @@
       <div class="browse-header">
         <h1 class="browse-title">Browse Archive</h1>
         <p class="browse-subtitle">Discover AI-generated insights and knowledge shared by our community</p>
-      </div>
-      
-      <!-- New Clean Filters -->
-      <div class="quick-filters">
-        <span class="filter-label">Filter by:</span>
-        
-        <div class="filter-chip" data-filter="ai-model" data-value="gpt">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 12l2 2 4-4"/>
-            <circle cx="12" cy="12" r="9"/>
-          </svg>
-          GPT Models
-        </div>
-        
-        <div class="filter-chip" data-filter="ai-model" data-value="claude">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 12l2 2 4-4"/>
-            <circle cx="12" cy="12" r="9"/>
-          </svg>
-          Claude
-        </div>
-        
-        <div class="filter-chip" data-filter="ai-model" data-value="gemini">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 12l2 2 4-4"/>
-            <circle cx="12" cy="12" r="9"/>
-          </svg>
-          Gemini
-        </div>
-        
-        <div class="filter-divider"></div>
-        
-        <div class="filter-chip" data-filter="content-type" data-value="text">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <polyline points="14,2 14,8 20,8"/>
-          </svg>
-          Text Only
-        </div>
-        
-        <div class="filter-chip" data-filter="content-type" data-value="embedded">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-          </svg>
-          With Links
-        </div>
-        
-        <div class="filter-divider"></div>
-        
-        <div class="filter-chip" data-filter="time" data-value="today">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <polyline points="12,6 12,12 16,14"/>
-          </svg>
-          Today
-        </div>
-        
-        <div class="filter-chip" data-filter="time" data-value="week">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <polyline points="12,6 12,12 16,14"/>
-          </svg>
-          This Week
-        </div>
-        
-        <div class="filter-chip" data-filter="time" data-value="month">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <polyline points="12,6 12,12 16,14"/>
-          </svg>
-          This Month
-        </div>
-        
-        <div class="filter-divider"></div>
-        
-        <a href="#" class="clear-all-filters" id="clear-all-filters">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-          Clear All
-        </a>
       </div>
       
       <div class="browse-controls">

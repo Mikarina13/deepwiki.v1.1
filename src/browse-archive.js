@@ -14,11 +14,6 @@ let totalPosts = 0;
 let isLoading = false;
 let popularTags = [];
 let selectedTags = [];
-let activeFilters = {
-  aiModel: null,
-  contentType: null,
-  time: null
-};
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Initialize the menu
@@ -33,63 +28,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadPosts();
   setupEventListeners();
 });
-
-function setupQuickFilters() {
-  const filterChips = document.querySelectorAll('.filter-chip');
-  const clearAllBtn = document.getElementById('clear-all-filters');
-  
-  // Handle filter chip clicks
-  filterChips.forEach(chip => {
-    chip.addEventListener('click', () => {
-      const filterType = chip.dataset.filter;
-      const filterValue = chip.dataset.value;
-      
-      // Toggle filter
-      if (chip.classList.contains('active')) {
-        // Remove filter
-        chip.classList.remove('active');
-        activeFilters[toCamelCase(filterType)] = null;
-      } else {
-        // Remove other active filters of the same type
-        filterChips.forEach(otherChip => {
-          if (otherChip.dataset.filter === filterType) {
-            otherChip.classList.remove('active');
-          }
-        });
-        
-        // Add this filter
-        chip.classList.add('active');
-        activeFilters[toCamelCase(filterType)] = filterValue;
-      }
-      
-      // Apply filters
-      performSearch();
-    });
-  });
-  
-  // Handle clear all
-  clearAllBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    
-    // Clear all active filters
-    filterChips.forEach(chip => chip.classList.remove('active'));
-    activeFilters = {
-      aiModel: null,
-      contentType: null,
-      time: null
-    };
-    
-    // Clear search
-    document.getElementById('search-input').value = '';
-    
-    // Reload posts
-    performSearch();
-  });
-}
-
-function toCamelCase(str) {
-  return str.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
-}
 
 async function loadPopularTags() {
   try {
@@ -129,13 +67,11 @@ function displayPopularTags() {
 async function loadPosts(page = 1, filters = {}) {
   if (isLoading) return;
   
-  // Merge active quick filters with other filters
-  const allFilters = { ...filters, ...getQuickFilters() };
-  
   isLoading = true;
   showLoading();
   
   try {
+    const allFilters = { ...filters, ...getTopFilters() };
     const { 
       searchTerm = '', 
       aiModel = '', 
@@ -167,7 +103,7 @@ async function loadPosts(page = 1, filters = {}) {
     
     // Apply AI model filter
     if (aiModel) {
-      if (aiModel === 'gpt') {
+      if (aiModel === 'gpt-4') {
         query = query.or('ai_model.ilike.%gpt-4%,ai_model.ilike.%gpt4%');
       } else if (aiModel === 'claude') {
         query = query.ilike('ai_model', '%claude%');
@@ -270,31 +206,22 @@ async function loadPosts(page = 1, filters = {}) {
   }
 }
 
-function getQuickFilters() {
+function getTopFilters() {
   const filters = {
-    aiModel: activeFilters.aiModel || '',
-    contentType: activeFilters.contentType || 'all',
-    dateFrom: '',
-    dateTo: ''
+    aiModel: [],
+    contentType: document.querySelector('input[name="content-type"]:checked')?.value || 'all',
+    promptVisibility: document.querySelector('input[name="prompt-visibility"]:checked')?.value || 'all',
+    dateFrom: document.querySelector('input[name="date-from"]')?.value || '',
+    dateTo: document.querySelector('input[name="date-to"]')?.value || '',
+    viewsMin: document.querySelector('input[name="views-min"]')?.value || '',
+    viewsMax: document.querySelector('input[name="views-max"]')?.value || '',
+    tags: selectedTags
   };
   
-  // Handle time filters
-  if (activeFilters.time) {
-    const now = new Date();
-    switch (activeFilters.time) {
-      case 'today':
-        filters.dateFrom = now.toISOString().split('T')[0];
-        break;
-      case 'week':
-        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        filters.dateFrom = weekAgo.toISOString().split('T')[0];
-        break;
-      case 'month':
-        const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-        filters.dateFrom = monthAgo.toISOString().split('T')[0];
-        break;
-    }
-  }
+  // Get selected AI models
+  document.querySelectorAll('input[name="ai-model"]:checked').forEach(checkbox => {
+    filters.aiModel.push(checkbox.value);
+  });
   
   return filters;
 }
@@ -475,9 +402,6 @@ function setupEventListeners() {
   const tagSearchInput = document.getElementById('tag-search-input');
   const clearFiltersBtn = document.getElementById('clear-filters');
   
-  // Setup quick filters
-  setupQuickFilters();
-  
   // Debounced search
   let searchTimeout;
   searchInput.addEventListener('input', (e) => {
@@ -489,6 +413,13 @@ function setupEventListeners() {
   
   // Filter changes
   sortFilter.addEventListener('change', performSearch);
+  
+  // Top filter changes
+  document.addEventListener('change', (e) => {
+    if (e.target.matches('input[name="ai-model"], input[name="content-type"], input[name="prompt-visibility"], input[name="date-from"], input[name="date-to"], input[name="views-min"], input[name="views-max"]')) {
+      performSearch();
+    }
+  });
   
   // Tag search
   if (tagSearchInput) {
@@ -527,6 +458,11 @@ function setupEventListeners() {
   // Clear filters
   if (clearFiltersBtn) {
     clearFiltersBtn.addEventListener('click', () => {
+      // Clear all form inputs
+      document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+      document.querySelectorAll('input[type="radio"][value="all"]').forEach(radio => radio.checked = true);
+      document.querySelectorAll('input[type="date"], input[type="number"], input[type="text"]').forEach(input => input.value = '');
+      
       // Clear selected tags
       selectedTags = [];
       document.querySelectorAll('.tag-filter.active').forEach(tag => tag.classList.remove('active'));
