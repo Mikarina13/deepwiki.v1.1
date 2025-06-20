@@ -953,6 +953,139 @@
         <p>Loading posts...</p>
       </div>
       
+      <!-- Enhanced Filters Section -->
+      <div class="filters-section">
+        <h2 class="filters-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+          </svg>
+          Advanced Filters
+        </h2>
+        
+        <div class="filters-grid">
+          <!-- AI Model Filter -->
+          <div class="filter-group">
+            <h4>AI Model</h4>
+            <div class="filter-options">
+              <div class="filter-option">
+                <label>
+                  <input type="checkbox" name="ai-model" value="gpt-4">
+                  GPT-4 Models
+                </label>
+              </div>
+              <div class="filter-option">
+                <label>
+                  <input type="checkbox" name="ai-model" value="claude">
+                  Claude
+                </label>
+              </div>
+              <div class="filter-option">
+                <label>
+                  <input type="checkbox" name="ai-model" value="gemini">
+                  Gemini
+                </label>
+              </div>
+              <div class="filter-option">
+                <label>
+                  <input type="checkbox" name="ai-model" value="other">
+                  Other Models
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Content Type Filter -->
+          <div class="filter-group">
+            <h4>Content Type</h4>
+            <div class="filter-options">
+              <div class="filter-option">
+                <label>
+                  <input type="radio" name="content-type" value="all" checked>
+                  All Content
+                </label>
+              </div>
+              <div class="filter-option">
+                <label>
+                  <input type="radio" name="content-type" value="text">
+                  Text Only
+                </label>
+              </div>
+              <div class="filter-option">
+                <label>
+                  <input type="radio" name="content-type" value="embedded">
+                  With Links
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Prompt Visibility Filter -->
+          <div class="filter-group">
+            <h4>Prompt Visibility</h4>
+            <div class="filter-options">
+              <div class="filter-option">
+                <label>
+                  <input type="radio" name="prompt-visibility" value="all" checked>
+                  All Posts
+                </label>
+              </div>
+              <div class="filter-option">
+                <label>
+                  <input type="radio" name="prompt-visibility" value="public">
+                  Public Prompts
+                </label>
+              </div>
+              <div class="filter-option">
+                <label>
+                  <input type="radio" name="prompt-visibility" value="private">
+                  Private Prompts
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Date Range Filter -->
+          <div class="filter-group">
+            <h4>Date Range</h4>
+            <div class="date-inputs">
+              <input type="date" name="date-from" placeholder="From">
+              <input type="date" name="date-to" placeholder="To">
+            </div>
+          </div>
+          
+          <!-- Views Range Filter -->
+          <div class="filter-group">
+            <h4>View Count</h4>
+            <div class="filter-range">
+              <input type="number" name="views-min" placeholder="Min views" min="0">
+              <span>to</span>
+              <input type="number" name="views-max" placeholder="Max views" min="0">
+            </div>
+          </div>
+          
+          <!-- Tags Filter -->
+          <div class="filter-group tags-filter-group">
+            <h4>Tags</h4>
+            <div class="tag-search-container">
+              <input type="text" id="tag-search-input" placeholder="Search tags..." class="tag-search">
+            </div>
+            <div class="popular-tags" id="popular-tags">
+              <!-- Popular tags will be populated by JavaScript -->
+            </div>
+          </div>
+        </div>
+        
+        <div class="filter-actions">
+          <button type="button" id="clear-filters" class="clear-filters-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+            Clear All Filters
+          </button>
+        </div>
+      </div>
+      
       <div id="posts-container">
         <div class="loading-state">
           <div class="loading-spinner"></div>
