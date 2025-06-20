@@ -86,6 +86,67 @@ async function loadRecentPosts() {
   }
 }
 
+function showSlide(index) {
+  if (isTransitioning || slides.length === 0) return;
+  
+  currentSlide = index;
+  
+  // Remove active class from all slides
+  const allSlides = document.querySelectorAll('.slide');
+  allSlides.forEach(slide => slide.classList.remove('active'));
+  
+  // Add active class to current slide
+  const activeSlide = document.querySelector(`[data-slide="${index}"]`);
+  if (activeSlide) {
+    activeSlide.classList.add('active');
+  }
+  
+  // Update slide indicators if they exist
+  const indicators = document.querySelectorAll('.slide-indicator');
+  indicators.forEach((indicator, i) => {
+    indicator.classList.toggle('active', i === index);
+  });
+}
+
+function createFallbackSlides() {
+  const slidesContainer = document.querySelector('.slides-container');
+  if (!slidesContainer) return;
+
+  slidesContainer.innerHTML = `
+    <div class="slide active" data-slide="0">
+      <div class="slide-content">
+        <div class="slide-header">
+          <div class="slide-type">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+            </svg>
+            NO POSTS AVAILABLE
+          </div>
+        </div>
+        
+        <h3 class="slide-title">Welcome to DeepWiki</h3>
+        
+        <div class="slide-preview">
+          No posts are currently available. Be the first to share your AI insights or collaboration opportunities!
+        </div>
+        
+        <div class="slide-actions">
+          <a href="/publish.html" class="slide-view-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 5v14"/>
+              <path d="M5 12h14"/>
+            </svg>
+            Create First Post
+          </a>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  slides = [{ id: 'fallback', title: 'Welcome to DeepWiki', type: 'fallback' }];
+  currentSlide = 0;
+}
+
 function createSlides() {
   const slidesContainer = document.querySelector('.slides-container');
   if (!slidesContainer) return;
