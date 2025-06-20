@@ -1,6 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
 import { initMenu } from './utils/menu.js';
-import { incrementDownloadsAndHandleContent } from './utils/download.js';
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -19,6 +18,7 @@ let activeFilters = {
   contentType: null,
   time: null
 };
+let currentPosts = []; // Store current posts for download functionality
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Initialize the menu
@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // Initialize page
   await loadPopularTags();
-  await loadPosts();
+    await handleDownloadClick(e.target.closest('.download-btn'), post);
   setupEventListeners();
 });
 
@@ -257,6 +257,9 @@ async function loadPosts(page = 1, filters = {}) {
     
     totalPosts = count || 0;
     currentPage = page;
+    
+    // Store posts for download functionality
+    currentPosts = posts || [];
     
     await displayPosts(posts || []);
     updateStats();
@@ -549,7 +552,15 @@ function setupEventListeners() {
     // Download button clicks
     if (e.target.closest('.download-btn')) {
       e.stopPropagation();
-      await handleDownloadClick(e.target.closest('.download-btn'));
+      const button = e.target.closest('.download-btn');
+      const postCard = button.closest('.post-card');
+      const postId = button.dataset.postId;
+      
+      // Find the post data from the current posts array
+      const post = currentPosts.find(p => p.id === postId);
+      if (post) {
+        await handleDownloadClick(button, post);
+      }
     }
   });
 }
@@ -624,24 +635,106 @@ async function handleFavoriteClick(button) {
   }
 }
 
-async function handleDownloadClick(button) {
+async function handleDownloadClick(button, post) {
   const postId = button.dataset.postId;
   const postType = button.dataset.postType;
 
   try {
-    // Get post data for download
-    const { data: post } = await supabase
+    // Increment download count
+    const { data: currentPost, error: selectError } = await supabase
       .from('archive_posts')
-      .select(`
-        *,
-        users:user_id (
-          email,
-          raw_user_meta_data
-        )
-      `)
+      .select('downloads')
       .eq('id', postId)
       .single();
+
+    if (!selectError) {
+      const newDownloadCount = (currentPost.downloads || 0) + 1;
+      
+      await supabase
+        .from('archive_posts')
+        .update({ downloads: newDownloadCount })
+        .eq('id', postId);
+    }
+
+    // Handle content download
+    if (post.embed_url) {
+      // If there's an embed URL, open it in a new tab
+      window.open(post.embed_url, '_blank', 'noopener,noreferrer');
+      showNotification('Opening content in new tab...', 'success');
+    } else if (post.content) {
+      // If there's content, create and download a text file
+      downloadTextFile(post);
+      showNotification('Download started!', 'success');
+    } else {
+      showNotification('No downloadable content available', 'error');
+      return;
+    }
+
+    // Update the download count in the UI
+    const downloadCountElement = button.closest('.post-card').querySelector('.download-count');
+    if (downloadCountElement) {
+      downloadCountElement.textContent = `📥 ${(currentPost?.downloads || 0) + 1}`;
+    }
+
+  } catch (error) {
+    console.error('Error handling download:', error);
+    showNotification('Failed to download content. Please try again.', 'error');
   }
+}
+
+function downloadTextFile(post) {
+  // Get author name
+  const authorName = post.users?.raw_user_meta_data?.display_name || 
+                    post.users?.raw_user_meta_data?.full_name || 
+                    post.users?.email?.split('@')[0] || 
+                    'Anonymous';
+  
+  // Create file content
+  const fileContent = `${post.title}
+${'='.repeat(post.title.length)}
+
+Author: ${authorName}
+AI Model: ${post.ai_model}
+Generated: ${post.generation_date ? new Date(post.generation_date).toLocaleDateString() : 'Unknown'}
+Tags: ${post.tags.join(', ')}
+
+${post.prompt_is_public !== false ? `Original Prompt:
+${'-'.repeat(16)}
+${post.prompt}
+
+` : ''}AI-Generated Content:
+${'-'.repeat(21)}
+${post.content}
+
+---
+Downloaded from DeepWiki.io
+Post ID: ${post.id}
+Downloaded on: ${new Date().toLocaleString()}
+`;
+
+  // Create blob and download
+  const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  
+  // Create temporary download link
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${sanitizeFilename(post.title)}.txt`;
+  
+  // Trigger download
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  // Clean up
+  URL.revokeObjectURL(url);
+}
+
+function sanitizeFilename(filename) {
+  return filename
+    .replace(/[^a-z0-9\s\-_]/gi, '') // Remove special characters
+    .replace(/\s+/g, '_') // Replace spaces with underscores
+    .substring(0, 100); // Limit length
 }
 function updateFavoriteButton(button, isFaved) {
   const svg = button.querySelector('svg');
