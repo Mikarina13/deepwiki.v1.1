@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // Initialize page
   await loadPopularTags();
-    await handleDownloadClick(e.target.closest('.download-btn'), post);
+  await loadPosts();
   setupEventListeners();
 });
 
