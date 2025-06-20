@@ -5,8 +5,6 @@ export async function initMenu() {
   const menuLogo = document.querySelector('.menu-logo');
   let menuOptions = document.querySelector('.menu-options');
   let menuOverlay = document.querySelector('.menu-overlay');
-  let leftEdgeTrigger;
-  let hamburgerIcon;
   
   // Create menu overlay if it doesn't exist
   if (!menuOverlay) {
@@ -213,17 +211,15 @@ export async function initMenu() {
   }
 
   // Create left-edge trigger if it doesn't exist
-  leftEdgeTrigger = document.querySelector('.left-edge-trigger');
-  if (!leftEdgeTrigger) {
-    leftEdgeTrigger = document.createElement('div');
+  if (!document.querySelector('.left-edge-trigger')) {
+    const leftEdgeTrigger = document.createElement('div');
     leftEdgeTrigger.className = 'left-edge-trigger';
     document.body.appendChild(leftEdgeTrigger);
   }
 
   // Create hamburger icon if it doesn't exist
-  hamburgerIcon = document.querySelector('.menu-hamburger-indicator');
-  if (!hamburgerIcon) {
-    hamburgerIcon = document.createElement('div');
+  if (!document.querySelector('.menu-hamburger-indicator')) {
+    const hamburgerIcon = document.createElement('div');
     hamburgerIcon.className = 'menu-hamburger-indicator';
     
     // Create three lines for the hamburger icon
@@ -237,22 +233,20 @@ export async function initMenu() {
   }
 
   // Add hover functionality to left edge trigger
-  if (leftEdgeTrigger) {
-    leftEdgeTrigger.addEventListener('mouseenter', () => {
-      if (!isMenuLockedOpen) {
-        openMenu();
-      }
-    });
-  }
+  const leftEdgeTrigger = document.querySelector('.left-edge-trigger');
+  leftEdgeTrigger.addEventListener('mouseenter', () => {
+    if (!isMenuLockedOpen) {
+      openMenu();
+    }
+  });
 
   // Make sure menu doesn't close when hovering over hamburger indicator
-  if (hamburgerIcon) {
-    hamburgerIcon.addEventListener('mouseenter', () => {
-      if (!isMenuLockedOpen) {
-        openMenu();
-      }
-    });
-  }
+  const hamburgerIcon = document.querySelector('.menu-hamburger-indicator');
+  hamburgerIcon.addEventListener('mouseenter', () => {
+    if (!isMenuLockedOpen) {
+      openMenu();
+    }
+  });
 
   // Handle mouse leaving the menu
   menuOptions.addEventListener('mouseleave', (e) => {
