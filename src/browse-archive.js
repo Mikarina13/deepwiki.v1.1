@@ -1,3 +1,5 @@
+console.log('browse-archive.js script started');
+
 import { createClient } from '@supabase/supabase-js';
 import { initMenu } from './utils/menu.js';
 import { incrementDownloadsAndHandleContent } from './utils/download.js';
