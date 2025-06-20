@@ -30,6 +30,132 @@ async function initializeApp() {
   setupSearch();
 }
 
+function setupSearch() {
+  const searchInput = document.querySelector('#search-input');
+  const searchResults = document.querySelector('#search-results');
+  
+  if (!searchInput) {
+    console.warn('Search input element not found - search functionality disabled');
+    return;
+  }
+  
+  // Set up search functionality if elements exist
+  let searchTimeout;
+  
+  searchInput.addEventListener('input', (e) => {
+    clearTimeout(searchTimeout);
+    const query = e.target.value.trim();
+    
+    if (query.length < 2) {
+      if (searchResults) {
+        searchResults.innerHTML = '';
+        searchResults.style.display = 'none';
+      }
+      return;
+    }
+    
+    // Debounce search
+    searchTimeout = setTimeout(() => {
+      performSearch(query);
+    }, 300);
+  });
+  
+  // Hide results when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!searchInput.contains(e.target) && searchResults && !searchResults.contains(e.target)) {
+      searchResults.style.display = 'none';
+    }
+  });
+}
+
+async function performSearch(query) {
+  const searchResults = document.querySelector('#search-results');
+  if (!searchResults) return;
+  
+  try {
+    // Search both archive and collab posts
+    const { data: archivePosts, error: archiveError } = await supabase
+      .from('archive_posts')
+      .select(`
+        *,
+        users:user_id (
+          email,
+          raw_user_meta_data
+        )
+      `)
+      .or(`title.ilike.%${query}%,content.ilike.%${query}%,tags.cs.{${query}}`)
+      .limit(5);
+
+    const { data: collabPosts, error: collabError } = await supabase
+      .from('collab_posts')
+      .select(`
+        *,
+        users:user_id (
+          email,
+          raw_user_meta_data
+        )
+      `)
+      .or(`title.ilike.%${query}%,description.ilike.%${query}%,tags.cs.{${query}}`)
+      .limit(5);
+
+    if (archiveError) console.error('Archive search error:', archiveError);
+    if (collabError) console.error('Collab search error:', collabError);
+
+    const allResults = [
+      ...(archivePosts || []).map(post => ({ ...post, type: 'archive' })),
+      ...(collabPosts || []).map(post => ({ ...post, type: 'collab' }))
+    ];
+
+    displaySearchResults(allResults, query);
+  } catch (error) {
+    console.error('Search error:', error);
+    searchResults.innerHTML = '<div class="search-error">Search temporarily unavailable</div>';
+    searchResults.style.display = 'block';
+  }
+}
+
+function displaySearchResults(results, query) {
+  const searchResults = document.querySelector('#search-results');
+  if (!searchResults) return;
+  
+  if (results.length === 0) {
+    searchResults.innerHTML = `<div class="no-results">No results found for "${query}"</div>`;
+    searchResults.style.display = 'block';
+    return;
+  }
+  
+  const resultsHTML = results.map(post => {
+    const authorName = post.users?.raw_user_meta_data?.display_name || 
+                      post.users?.raw_user_meta_data?.full_name || 
+                      post.users?.email?.split('@')[0] || 
+                      'Anonymous';
+    
+    const isArchive = post.type === 'archive';
+    const typeLabel = isArchive ? 'Archive' : 'Collab';
+    
+    return `
+      <div class="search-result-item">
+        <div class="search-result-header">
+          <span class="search-result-type">${typeLabel}</span>
+          <span class="search-result-author">${authorName}</span>
+        </div>
+        <h4 class="search-result-title">
+          <a href="/view-post.html?id=${post.id}&type=${post.type}">${post.title}</a>
+        </h4>
+        <div class="search-result-preview">
+          ${isArchive ? 
+            (post.content ? post.content.substring(0, 100) + '...' : 'No preview available') :
+            (post.description ? post.description.substring(0, 100) + '...' : 'No description available')
+          }
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  searchResults.innerHTML = resultsHTML;
+  searchResults.style.display = 'block';
+}
+
 async function loadRecentPosts() {
   try {
     // Fetch recent archive posts with user information
