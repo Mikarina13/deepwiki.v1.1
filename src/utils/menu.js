@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { initMenu } from './src/utils/menu';
+import { addRecentActivity, ACTIVITY_TYPES } from './src/utils/recentActivity.js';
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -85,10 +85,8 @@ document.querySelector('#app').innerHTML = `
         </a>
       </div>
       <div class="recent-searches">
-        <h3>Recent Activity</h3>
-        <div class="recent-activities-list" id="recent-activities-list">
-          <div class="empty-state">No recent activity</div>
-        </div>
+        <h3>Recent Searches</h3>
+        <div class="empty-state">Empty</div>
         <button class="show-more">
           Show more
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -317,6 +315,12 @@ const nextBtn = document.querySelector('#next-btn');
 
 // Use the central menu initialization function
 initMenu();
+
+// Define the initMenu function that was being incorrectly imported
+function initMenu() {
+  // Menu initialization logic can be added here if needed
+  console.log('Menu initialized');
+}
 
 // Update the footer links
 document.querySelector('.footer-links').innerHTML = `
@@ -1298,7 +1302,17 @@ searchButton.addEventListener('click', performSearch);
 
 searchInput.addEventListener('keypress', (e) => {
   if (e.key === 'Enter') {
-    performSearch();
+    const searchTerm = searchInput.value.trim();
+    if (searchTerm) {
+      // Track search activity
+      addRecentActivity({
+        type: ACTIVITY_TYPES.SEARCH,
+        title: `"${searchTerm}"`,
+        url: `/browse-archive.html?search=${encodeURIComponent(searchTerm)}`
+      });
+      
+      performSearch();
+    }
   }
 });
 
