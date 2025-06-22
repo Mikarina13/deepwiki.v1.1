@@ -1,6 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { initMenu } from './src/utils/menu.js';
-import { addRecentActivity, ACTIVITY_TYPES } from './src/utils/recentActivity.js';
+import { initMenu } from './src/utils/menu';
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -1297,17 +1296,7 @@ searchButton.addEventListener('click', performSearch);
 
 searchInput.addEventListener('keypress', (e) => {
   if (e.key === 'Enter') {
-    const searchTerm = searchInput.value.trim();
-    if (searchTerm) {
-      // Track search activity
-      addRecentActivity({
-        type: ACTIVITY_TYPES.SEARCH,
-        title: `"${searchTerm}"`,
-        url: `/browse-archive.html?search=${encodeURIComponent(searchTerm)}`
-      });
-      
-      performSearch();
-    }
+    performSearch();
   }
 });
 
