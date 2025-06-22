@@ -131,7 +131,7 @@ document.querySelector('#app').innerHTML = `
       </div>
     </div>
     <img 
-      src="https://i.imgur.com/MQYLMSS.png" 
+      src="https://i.imgur.com/sMqKf3K.png" 
       alt="Top Center Image" 
       class="top-center-image"
     >
