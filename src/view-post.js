@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { initMenu } from './utils/menu';
+import { initMenu } from './src/utils/menu';
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -423,13 +423,7 @@ async function loadCarouselData() {
     // Load archive posts without joining users table to avoid RLS issues
     const { data: archiveData, error: archiveError } = await supabase
       .from('archive_posts')
-      .select(`
-        *,
-        users:user_id (
-          email,
-          raw_user_meta_data
-        )
-      `)
+      .select('*')
       .order('created_at', { ascending: false })
       .limit(10);
 
@@ -521,31 +515,6 @@ function updateCarouselContent() {
   updateCarouselPosition();
 }
 
-// Function to get author name from user data
-function getAuthorName(post) {
-  if (!post.users) return 'Community Member';
-  
-  const userData = post.users;
-  const metaData = userData.raw_user_meta_data || {};
-  
-  // Try display_name first (from OAuth or user settings)
-  if (metaData.display_name) {
-    return metaData.display_name;
-  }
-  
-  // Try full_name second
-  if (metaData.full_name) {
-    return metaData.full_name;
-  }
-  
-  // Use email username as fallback
-  if (userData.email) {
-    return userData.email.split('@')[0];
-  }
-  
-  return 'Community Member';
-}
-
 // Render archive cards with real data - Updated to not depend on user data
 function renderArchiveCards() {
   const carouselTrack = document.querySelector('#carousel-track');
@@ -591,7 +560,7 @@ function renderArchiveCards() {
       postDate;
     
     // Use anonymous author since we can't safely access user data
-    const authorName = getAuthorName(post);
+    const authorName = 'Community Member';
     
     // Truncate content for preview (doubled size as requested)
     const contentPreview = post.content ? 
@@ -875,13 +844,7 @@ async function fetchArchivePosts(query, filters = {}) {
     // Build query with filters
     let supabaseQuery = supabase
       .from('archive_posts')
-      .select(`
-        *,
-        users:user_id (
-          email,
-          raw_user_meta_data
-        )
-      `);
+      .select('*');
 
     // Apply search filter
     supabaseQuery = supabaseQuery.or(`title.ilike.%${query}%,content.ilike.%${query}%,prompt.ilike.%${query}%,tags.cs.{${query}}`);
