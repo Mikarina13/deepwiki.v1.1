@@ -14,7 +14,7 @@ document.querySelector('#app').innerHTML = `
       class="sliding-image-left"
     >
     <img 
-      src="https://videos.openai.com/vg-assets/assets%2Ftask_01jybgre3sfqf9t8hj52a9e932%2F1750585892_img_0.webp?st=2025-06-22T08%3A34%3A52Z&se=2025-06-28T09%3A34%3A52Z&sks=b&skt=2025-06-22T08%3A34%3A52Z&ske=2025-06-28T09%3A34%3A52Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=3d249c53-07fa-4ba4-9b65-0bf8eb4ea46a&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=9B5j6C%2FjCO%2BL0IoqBM8ZCZutsdcCGbYPbDxoczS5Fek%3D&az=oaivgprodscus" 
+      src="https://i.imgur.com/zcLQ3gB.png" 
       alt="Middle Image" 
       class="middle-image"
     >
@@ -24,7 +24,7 @@ document.querySelector('#app').innerHTML = `
       class="sliding-image-right"
     >
     <div class="menu-header">
-      <img src="https://videos.openai.com/vg-assets/assets%2Ftask_01jybgre3sfqf9t8hj52a9e932%2F1750585892_img_0.webp?st=2025-06-22T08%3A34%3A52Z&se=2025-06-28T09%3A34%3A52Z&sks=b&skt=2025-06-22T08%3A34%3A52Z&ske=2025-06-28T09%3A34%3A52Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=3d249c53-07fa-4ba4-9b65-0bf8eb4ea46a&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=9B5j6C%2FjCO%2BL0IoqBM8ZCZutsdcCGbYPbDxoczS5Fek%3D&az=oaivgprodscus" alt="Menu Logo" class="menu-logo">
+      <img src="https://i.imgur.com/zcLQ3gB.png" alt="Menu Logo" class="menu-logo">
       <div class="nav-links">
         <div class="nav-container">
           <a href="/publish.html" class="nav-item publish-nav">
